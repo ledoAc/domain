@@ -1,5 +1,4 @@
 #!/bin/bash
-#author: Ostap Beshchanyk
 clear
 
 if [ -z "$1" ]; then
