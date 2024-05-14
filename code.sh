@@ -66,7 +66,7 @@ check_tld() {
     tld="$1"
     case $tld in
         de|br|it|fr|is)
-            echo -e "\e[96m\e[1m Note that \e[41m.$tld\e[0m\e[96m\e[1m domains have specific requirements for nameservers.\n Specifically, before nameservers are changed, there should be a DNS zone created for \e[41m.$tld\e[0m\e[96m\e[1m domain in advance.\n This is why you will need to add domain to hosting first, and then change nameservers.\e[0m"
+            echo -e "\e[96m\e[1m Note that \e[41m.$tld\e[0m\e[96m\e[1m domains have specific requirements for nameservers. Specifically, before nameservers are changed, there should be a DNS zone created for \e[41m.$tld\e[0m\e[96m\e[1m domain in advance. This is why you will need to add domain to hosting first, and then change nameservers.\e[0m"
             ;;
     esac
 }
@@ -245,21 +245,21 @@ echo "-c - DOMLOGS"
 echo "-s - DOMLOGS section for each domain name."
 echo
 print_in_frame_records  "The main page displays information about the domain:"
-echo -e "- checks the domain for the serverHold block\n- WHOIS\n- Nameserver\n- Glue record\n- displays records (A, MX, TXT, CNAME, DKIM, SPF, DMARC, PTR)\n- shows who owns the IP\n- checks if the IP belongs to EasyWP\n- checks if the nameservers belong to Spaceship\n- Displays the TLD domains for which a DNS zone should be created before adding name servers."
+echo -e "- checks the domain for the serverHold block- WHOIS- Nameserver- Glue record- displays records (A, MX, TXT, CNAME, DKIM, SPF, DMARC, PTR)- shows who owns the IP- checks if the IP belongs to EasyWP- checks if the nameservers belong to Spaceship- Displays the TLD domains for which a DNS zone should be created before adding name servers."
 echo
 print_in_frame_records "flag -p displays:"
-echo -e "\n- cPanel information\n- Number of connections to ports\n- TTFB\n- Response time\n- ModSec\n- HAProxy\n- CSF\n- SuperSonic CDN IP block\n- Ezoik\n- Redirection\n- Cron log\n- Login log\n- FTP log"
+echo -e "- cPanel information- Number of connections to ports- TTFB- Response time- ModSec- HAProxy- CSF- SuperSonic CDN IP block- Ezoik- Redirection- Cron log- Login log- FTP log"
 echo
 print_in_frame_records "flag -i displays:"
-echo -e "\n- check IP\n- modsec\n- HAProxy\n- cPHulk\n- LFD"
+echo -e "- check IP- modsec- HAProxy- cPHulk- LFD"
 echo
 print_in_frame_records "flag -e displays:"
-echo -e "\n- Maillog\n- Exim\n- POP3"
+echo -e "- Maillog- Exim- POP3"
 echo
 print_in_frame_records "flag -c displays:"
-echo -e "\n- Show the DOMLOGS section only."
+echo -e "- Show the DOMLOGS section only."
 print_in_frame_records "flag -s displays:"
-echo -e "\n- Show the DOMLOGS section for each domain name."
+echo -e "- Show the DOMLOGS section for each domain name."
 echo
 }
 if [[ "$1" == "-h" || "$1" == "--help" || "$1" == "-help" ]]; then
@@ -460,7 +460,7 @@ user_info=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" 
 timestamp=$(echo "$user_info" | grep -oP 'STARTDATE=\K\d+')
 converted_date="Account creation date: $(date -d "@$timestamp")"
 user_info=$(echo "$user_info" | sed '/STARTDATE=/d')
-echo -e "$user_info\n$converted_date"
+echo -e "$user_info$converted_date"
 routingRem=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "cat /etc/remotedomains 2>/dev/null | grep $domain")
 
 if [ -n "$routingRem" ]; then
@@ -475,10 +475,10 @@ fi
             ssh_port443=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
             ssh_port80=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")        
 cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record.web-hosting.com "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
-ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} \nTTFB: %{time_starttransfer} \nTotal time: %{time_total} \n" https:/$domain/)
+ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} TTFB: %{time_starttransfer} Total time: %{time_total} " https:/$domain/)
 echo "$ttfb"
 echo
-echo -e "\e[3;36mIf TTFB is higher than 5 seconds – smth is going on in the web server and is better to be reported to SME.\nIf TTFB is low (less than 1 second (1000ms) can be considered as tolerable for shared hosts).\e[0m"
+echo -e "\e[3;36mIf TTFB is higher than 5 seconds – smth is going on in the web server and is better to be reported to SME.If TTFB is low (less than 1 second (1000ms) can be considered as tolerable for shared hosts).\e[0m"
 echo 
 echo -e  "Server: $(dig +short -x "$serv_a_records") -- $cloud_rel "
             echo "Established connections to port 443: $ssh_port443"
@@ -528,7 +528,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
                  print_in_frame "CDN IP"
 
 echo -e "\e[3;36mSupersonic IP blocking.\e[0m"
- cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e '\nNo blocks were found for the specified IPs.'")
+ cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e 'No blocks were found for the specified IPs.'")
  if [[ -n "$cdn" ]]; then
     echo "$cdn"
 else
@@ -545,7 +545,7 @@ blocked_ips=($(echo "$ezoik" | grep '^csf.deny' | awk '{print $3}'))
 
 if [ ${#blocked_ips[@]} -gt 0 ]; then
     echo "Blocked IP addresses:"
-    printf '%s\n' "${blocked_ips[@]}"
+    printf '%s' "${blocked_ips[@]}"
 else
     echo "No blocked IP addresses found"
 fi
@@ -595,7 +595,7 @@ user_info=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" 
 timestamp=$(echo "$user_info" | grep -oP 'STARTDATE=\K\d+')
 converted_date="Account creation date: $(date -d "@$timestamp")"
 user_info=$(echo "$user_info" | sed '/STARTDATE=/d')
-echo -e "$user_info\n$converted_date"
+echo -e "$user_info$converted_date"
 routingRem=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "cat /etc/remotedomains 2>/dev/null | grep $domain")
 
 if [ -n "$routingRem" ]; then
@@ -609,10 +609,10 @@ print_in_frame "Number of connections to ports and TTFB"
 ssh_port443_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
 ssh_port80_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")
 cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
-ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} \nTTFB: %{time_starttransfer} \nTotal time: %{time_total} \n" https:/$domain/)
+ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} TTFB: %{time_starttransfer} Total time: %{time_total} " https:/$domain/)
 echo "$ttfb"
 echo
-echo -e "\e[3;36mIf TTFB is higher than 5 seconds – smth is going on in the web server and is better to be reported to SME.\nIf TTFB is low (less than 1 second (1000ms) can be considered as tolerable for shared hosts).\e[0m"
+echo -e "\e[3;36mIf TTFB is higher than 5 seconds – smth is going on in the web server and is better to be reported to SME.If TTFB is low (less than 1 second (1000ms) can be considered as tolerable for shared hosts).\e[0m"
 echo
 echo -e  "Server: $server_record_new -- $cloud_rel "
 echo "Established connections to port 443: $ssh_port443_new"
@@ -657,7 +657,7 @@ fi
         print_in_frame "CDN IP"
 
 echo -e "\e[3;36mSupersonic IP blocking.\e[0m"
- cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e '\nNo blocks were found for the specified IPs.'")
+ cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e 'No blocks were found for the specified IPs.'")
  if [[ -n "$cdn" ]]; then
     echo "$cdn"
 else
@@ -673,7 +673,7 @@ blocked_ips=($(echo "$ezoik" | grep '^csf.deny' | awk '{print $3}'))
 
 if [ ${#blocked_ips[@]} -gt 0 ]; then
     echo "Blocked IP addresses:"
-    printf '%s\n' "${blocked_ips[@]}"
+    printf '%s' "${blocked_ips[@]}"
 else
     echo "No blocked IP addresses found"
 fi
@@ -731,7 +731,7 @@ if [ "$#" -eq 1 ]; then
     print_in_frame "Nameservers"
 
     if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Nameservers records for the domain $domain. Maybe the domain doesn't point to the server.\n"
+        echo -e "Unfortunately, there are no Nameservers records for the domain $domain. Maybe the domain doesn't point to the server."
     else
         echo "$ns_records" | while read -r line; do
             if [[ "$line" == *"launch1.spaceship.net"* || "$line" == *"launch2.spaceship.net"* ]]; then
@@ -758,7 +758,7 @@ if [ "$#" -eq 1 ]; then
     print_in_frame "Glue records"
 
     if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet.\n"
+        echo -e "Unfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet."
     else
         while read -r ns; do
             ip=$(dig +short @8.8.8.8 $ns)
@@ -775,7 +775,7 @@ if [ "$#" -eq 1 ]; then
 
     if [ -n "$a_records" ]; then
         if [[ "$a_records" == *"100.100.100.6"* ]]; then
-            echo -n -e "The domain is not pointed to hosting or desync.\n"
+            echo -n -e "The domain is not pointed to hosting or desync."
         else
             echo -n  -e "$a_records - $who_ip"
         fi
