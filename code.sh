@@ -1,6 +1,6 @@
 #!/bin/bash
 #autor: Ostap Beshchanyk
-#version: 2.1
+#version: 2.8
 
 clear
 
