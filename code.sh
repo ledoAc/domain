@@ -716,15 +716,22 @@ fi
 if [ "$#" -eq 1 ]; then
     domain="$1"
 
-    output=$(whois "$1" | grep -i "serverHold")
+    output_serverHold=$(whois "$1" | grep -i "serverHold")
+output_clientHold=$(whois "$1" | grep -i "clientHold")
 
-    if [ -n "$output" ]; then
-        print_in_frame_red "Domain blocks"
-        echo -e " $output"
-    else
-        print_in_frame "Domain blocks"
-        echo -e "There are no serverHold restrictions for this domain "
+if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
+    print_in_frame_red "Domain blocks"
+    if [ -n "$output_serverHold" ]; then
+        echo -e " $output_serverHold"
     fi
+    if [ -n "$output_clientHold" ]; then
+        echo -e " $output_clientHold"
+    fi
+else
+    print_in_frame "Domain blocks"
+    echo -e "There are no serverHold or clientHold restrictions for this domain"
+fi
+
 
     ns_records=$(dig +short NS @8.8.8.8 "$domain")
 
