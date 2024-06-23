@@ -154,6 +154,70 @@ echo -e "\e[96m#################################################################
 fi
 
 
+
+
+
+
+
+
+
+
+
+if [ "$#" -eq 2 ]; then
+    domain="$1"
+    param="$2"
+
+    if [ "$param" = "-header" ]; then
+
+        serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
+        web_serv=$(dig +short -x "$serv_a_records")
+
+        if [[ "$web_serv" == *"web-hosting.com"* ]]; then
+ server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+read -p "Enter email address or ID: " input_email
+        email="$input_email"
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
+
+print_in_frame "Header"
+
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "csgrep -irl $email /home/$cuser/mail")
+echo "$header"
+
+echo
+echo -e "\e[96m####################################################################################################################################################\e[0"
+
+        else
+            while [[ -z "$server_record_new" ]]; do
+                read -p "Enter the full name of the server: " server_record_new
+            done
+read -p "Enter email address or ID: " input_email
+email="$input_email"
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
+
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "csgrep -irl $email /home/$cuser/mail")
+echo "$header"
+echo -e "\e[96m####################################################################################################################################################\e[0"
+
+        fi
+    fi
+
+fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 if [ "$#" -eq 2 ]; then
 
     domain="$1"
