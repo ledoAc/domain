@@ -180,7 +180,8 @@ cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -
 
 print_in_frame "Header"
 
-header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh $linKheader")
 echo "$header"
 
 echo
@@ -194,7 +195,8 @@ read -p "Enter email address or ID: " input_email
 email="$input_email"
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
 
-header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/local/sbin/cat.sh $linKheader")
 echo "$header"
 echo -e "\e[96m####################################################################################################################################################\e[0"
 
