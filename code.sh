@@ -850,7 +850,7 @@ fi
     print_in_frame_records "A record"
 
     a_records=$(dig +short +trace +nodnssec $domain A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-    who_ip=$(whois "$a_records" | grep -E "OrgName" | awk '{$1=""; print $0}')
+    who_ip=$(whois "$a_records" | grep -E "OrgName|netname" | awk '{$1=""; print $0}')
 
     if [ -n "$a_records" ]; then
         if [[ "$a_records" == *"100.100.100.6"* ]]; then
