@@ -182,7 +182,12 @@ print_in_frame "Header"
 
 linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
 header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh $linKheader")
-echo "$header"
+
+# Видалення зайвого тексту з початку рядка
+clean_header=$(echo "$header" | sed 's/^Grepping in "\/home\/eyepptup\/mail"//')
+
+echo "$clean_header"
+
 
 echo
 echo -e "\e[96m####################################################################################################################################################\e[0"
