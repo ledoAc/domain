@@ -174,7 +174,7 @@ if [ "$#" -eq 2 ]; then
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
  server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-read -p "Enter email address or ID: " input_email
+read -p "Enter ID: " input_email
         email="$input_email"
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 
@@ -194,7 +194,7 @@ echo -e "\e[96m#################################################################
             while [[ -z "$server_record_new" ]]; do
                 read -p "Enter the full name of the server: " server_record_new
             done
-read -p "Enter email address or ID: " input_email
+read -p "Enter ID: " input_email
 email="$input_email"
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
 print_in_frame "Header"
