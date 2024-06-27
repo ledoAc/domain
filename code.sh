@@ -281,6 +281,8 @@ else
     echo "Usage: $0 domain scan"
     exit 1
 fi
+fi
+fi
 
 
 
