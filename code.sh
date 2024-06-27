@@ -207,7 +207,6 @@ fi
 
 
 if [ "$#" -eq 2 ]; then
-    domain="$1"
     param="$2"
 
     if [ "$param" = "-scan" ]; then
@@ -276,8 +275,7 @@ if [ "$#" -eq 2 ]; then
         exit 1
     fi
 else
-    echo "Usage: $0 domain scan"
-    exit 1
+
 fi
 
 
