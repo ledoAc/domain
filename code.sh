@@ -227,9 +227,11 @@ if [ "$#" -eq 2 ]; then
 
             case $CHOICE in
                 1)
+		    echo "Scan in progress..."
                     scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date +%b_%d_%Y_%Hh%Mm).txt\"")
                     ;;
                 2)
+		    echo "Scan with quarantine in progress..."
                     scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date +%b_%d_%Y_%Hh%Mm).txt\" --quarantine /opt/cxs/quarantine")
                     ;;
                 *)
