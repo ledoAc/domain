@@ -212,7 +212,7 @@ if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
 
-    if [ "$param" = "scan" ]; then
+    if [ "$param" = "-scan" ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
         web_serv=$(dig +short -x "$serv_a_records")
