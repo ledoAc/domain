@@ -157,7 +157,7 @@ fi
 if [ "$#" -eq 2 ]; then
     param="$2"
     domain="$1"
-    if [ "$param" = "-www" ]; then
+    if [ "$param" = "-scan" ]; then
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
         web_serv=$(dig +short -x "$serv_a_records")
 print_in_frame "Scan"
@@ -171,12 +171,12 @@ print_in_frame "Scan"
 
             case $CHOICE in
                 1)
-                    scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
+                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
                     echo "Scan in progress..."
                     echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
                 2)
-                    scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
+                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
                     echo "Scan with quarantine in progress..."
                     echo "Scan report: tail /home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
@@ -202,12 +202,12 @@ print_in_frame "Scan"
 
             case $CHOICE in
                 1)
-                    scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
+                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
                     echo "Scan in progress..."
                     echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
                 2)
-                    scan=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
+                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
                     echo "Scan with quarantine in progress..."
                     echo "Scan report: tail /home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
