@@ -157,12 +157,6 @@ fi
 
 
 
-
-
-
-
-
-
 if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
