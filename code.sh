@@ -160,7 +160,7 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-scan" ]; then
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
         web_serv=$(dig +short -x "$serv_a_records")
-
+print_in_frame "Scan"
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
             cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
