@@ -645,31 +645,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
                 echo "The domain $domain is not blocked in iptables"
             fi
 
-                 print_in_frame "CDN IP"
 
-echo -e "\e[3;36mSupersonic IP blocking.\e[0m"
- cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e '\nNo blocks were found for the specified IPs.'")
- if [[ -n "$cdn" ]]; then
-    echo "$cdn"
-else
-    echo "No blocked IP addresses found"
-fi
-
-            print_in_frame "Ezoik"
-
-ezoik=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "for i in 52.20.63.25 3.225.202.138 3.217.200.190 54.212.71.227 52.12.170.68 34.218.21.81 3.7.90.144 13.127.240.219 18.139.6.69 18.140.184.0 3.106.6.164 3.106.176.6 13.237.131.67 15.222.77.144 15.222.108.52 18.157.131.187 18.157.105.182 3.126.25.160 34.248.174.237 52.16.85.139 34.255.61.232 15.236.165.82 15.236.137.228 15.236.166.30 18.228.20.129 18.228.107.195; do sudo /usr/sbin/csf -g $i; done;")
-
-
-blocked_ips=($(echo "$ezoik" | grep '^csf.deny' | awk '{print $3}'))
-
-
-if [ ${#blocked_ips[@]} -gt 0 ]; then
-    echo "Blocked IP addresses:"
-    printf '%s\n' "${blocked_ips[@]}"
-else
-    echo "No blocked IP addresses found"
-fi
-            
  print_in_frame "Logs"
 
  print_in_frame_records "Redirection"
@@ -772,30 +748,6 @@ if [ -n "$iptables" ]; then
     echo "The domain $domain is $iptables"
 else
     echo "The domain $domain is not blocked in iptables"
-fi
-
-        print_in_frame "CDN IP"
-
-echo -e "\e[3;36mSupersonic IP blocking.\e[0m"
- cdn=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "for IP in 102.129.224.110 102.165.20.124 141.98.88.158 181.214.52.84 191.101.22.164 191.96.192.230; do sudo /usr/sbin/csf -g ${IP}; done | grep --line-buffered '^csf.deny' || echo -e '\nNo blocks were found for the specified IPs.'")
- if [[ -n "$cdn" ]]; then
-    echo "$cdn"
-else
-    echo "No blocked IP addresses found"
-fi
-
-            print_in_frame "Ezoik"
-
-ezoik=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "for i in 52.20.63.25 3.225.202.138 3.217.200.190 54.212.71.227 52.12.170.68 34.218.21.81 3.7.90.144 13.127.240.219 18.139.6.69 18.140.184.0 3.106.6.164 3.106.176.6 13.237.131.67 15.222.77.144 15.222.108.52 18.157.131.187 18.157.105.182 3.126.25.160 34.248.174.237 52.16.85.139 34.255.61.232 15.236.165.82 15.236.137.228 15.236.166.30 18.228.20.129 18.228.107.195; do sudo /usr/sbin/csf -g $i; done;")
-
-
-blocked_ips=($(echo "$ezoik" | grep '^csf.deny' | awk '{print $3}'))
-
-if [ ${#blocked_ips[@]} -gt 0 ]; then
-    echo "Blocked IP addresses:"
-    printf '%s\n' "${blocked_ips[@]}"
-else
-    echo "No blocked IP addresses found"
 fi
 
  print_in_frame "Logs"
