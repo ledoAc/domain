@@ -126,6 +126,25 @@ print_in_frame_dom "=====================| MYSQL |====================="
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
 
 
+
+found_wr=false
+
+while IFS= read -r line; do
+    if $found_wr; then
+        echo "$line"
+    else
+        if [[ $line == *"=====================| WR |====================="* ]]; then
+            echo
+print_in_frame_dom "=====================| WR |====================="
+            found_wr=true
+        fi
+    fi
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "watch -n 1 sudo /usr/local/sbin/ps.sh  $cuser faux" 2>/dev/null | tr -d '\0')
+
+
+
+
+
 echo
 
 echo -e "\e[96m####################################################################################################################################################\e[0"
