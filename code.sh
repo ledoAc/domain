@@ -648,11 +648,6 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
 
  print_in_frame "Logs"
 
- print_in_frame_records "Redirection"
-location=$(wget -S --spider --max-redirect=0 -O /dev/null $domain 2>&1 | grep "Location:" | sed 's/\[following\]//g' | sed 's/Location: //g' | sed 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
-echo "Current domain: https://$domain"
-echo "Redirects to: https://$location"
-echo
 print_in_frame_records "Cron"
 echo -e "\e[3;36mChecking the log of recently triggered cron jobs of a cPanel account.\e[0m"
 echo
@@ -787,63 +782,6 @@ fi
 
 if [ "$#" -eq 1 ]; then
     domain="$1"
-
-    output_serverHold=$(whois "$1" | grep -i "serverHold")
-output_clientHold=$(whois "$1" | grep -i "clientHold")
-
-if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
-    print_in_frame_red "Domain blocks"
-    if [ -n "$output_serverHold" ]; then
-        echo -e " $output_serverHold"
-    fi
-    if [ -n "$output_clientHold" ]; then
-        echo -e " $output_clientHold"
-    fi
-else
-    print_in_frame "Domain blocks"
-    echo -e "There are no serverHold or clientHold restrictions for this domain"
-fi
-
-
-    ns_records=$(dig +short NS @8.8.8.8 "$domain")
-
-    print_in_frame "Nameservers"
-
-    if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Nameservers records for the domain $domain. Maybe the domain doesn't point to the server.\n"
-    else
-        echo "$ns_records" | while read -r line; do
-            if [[ "$line" == *"launch1.spaceship.net"* || "$line" == *"launch2.spaceship.net"* ]]; then
-                print_in_frame_blue "---Spaceship--$line"
-            else
-                echo "$line"
-            fi
-        done
-    fi
-
-    print_in_frame "WHOIS"
-
-     who_is=$(whois $domain | grep -E "Updated Date|Name Server|Registry Expiry Date|Registrar:|owner:|nserver:|organization:|organization-loc:")
-
-    tld=$(echo "$domain" | awk -F '.' '{print $NF}')
-
-    if [ "$tld" = "pk" ]; then
-        echo "This TLD has no whois server, but you can access the whois database at http://www.pknic.net.pk/"
-    fi
-
-
-    echo -e "$who_is"
-
-    print_in_frame "Glue records"
-
-    if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet.\n"
-    else
-        while read -r ns; do
-            ip=$(dig +short @8.8.8.8 $ns)
-            echo -e "----- $ns ----- $ip ---- "
-        done <<< "$ns_records"
-    fi
 
     print_in_frame "A,MX,TXT,PTR... records"
 
@@ -984,6 +922,68 @@ echo
         echo "No PTR records found for IP address."
     fi
 	echo
+
+
+
+    output_serverHold=$(whois "$1" | grep -i "serverHold")
+output_clientHold=$(whois "$1" | grep -i "clientHold")
+
+if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
+    print_in_frame_red "Domain blocks"
+    if [ -n "$output_serverHold" ]; then
+        echo -e " $output_serverHold"
+    fi
+    if [ -n "$output_clientHold" ]; then
+        echo -e " $output_clientHold"
+    fi
+else
+    print_in_frame "Domain blocks"
+    echo -e "There are no serverHold or clientHold restrictions for this domain"
+fi
+
+
+    ns_records=$(dig +short NS @8.8.8.8 "$domain")
+
+    print_in_frame "Nameservers"
+
+    if [ -z "$ns_records" ]; then
+        echo -e "\nUnfortunately, there are no Nameservers records for the domain $domain. Maybe the domain doesn't point to the server.\n"
+    else
+        echo "$ns_records" | while read -r line; do
+            if [[ "$line" == *"launch1.spaceship.net"* || "$line" == *"launch2.spaceship.net"* ]]; then
+                print_in_frame_blue "---Spaceship--$line"
+            else
+                echo "$line"
+            fi
+        done
+    fi
+
+    print_in_frame "WHOIS"
+
+     who_is=$(whois $domain | grep -E "Updated Date|Name Server|Registry Expiry Date|Registrar:|owner:|nserver:|organization:|organization-loc:")
+
+    tld=$(echo "$domain" | awk -F '.' '{print $NF}')
+
+    if [ "$tld" = "pk" ]; then
+        echo "This TLD has no whois server, but you can access the whois database at http://www.pknic.net.pk/"
+    fi
+
+
+    echo -e "$who_is"
+
+    print_in_frame "Glue records"
+
+    if [ -z "$ns_records" ]; then
+        echo -e "\nUnfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet.\n"
+    else
+        while read -r ns; do
+            ip=$(dig +short @8.8.8.8 $ns)
+            echo -e "----- $ns ----- $ip ---- "
+        done <<< "$ns_records"
+    fi
+
+
+ 
 echo -e "\e[96mYou can check more about the script like this:\e[0m\e[33m dom -help\e[0m"
 
     echo
