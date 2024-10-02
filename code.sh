@@ -572,24 +572,6 @@ if [ "$#" -eq 2 ]; then
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 
-print_in_frame "cPanel info"
- server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-user=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
-user_info=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh /var/cpanel/users/$user 2>/dev/null | grep -E 'USER=|PLAN=|IP=|MAX_EMAIL_PER_HOUR=|CONTACTEMAIL=|MAXADDON=|MAXFTP=|MAXPOP=|MAXSQL=|MAXSUB=|STARTDATE='" | sed -E "s/USER=/cPanel username: /; s/PLAN=/Hosting Plan: /; s/IP=/cPanel  IP: /; s/MAX_EMAIL_PER_HOUR=/Maximum emails per hour: /; s/CONTACTEMAIL=/Contact email: /; s/MAXADDON=/Maximum addons: /; s/MAXFTP=/Maximum FTP accounts: /; s/MAXPOP=/Maximum email accounts: /; s/MAXSUB=/Maximum subdomains: /; s/MAXSQL=/Maximum databases: /")
-
-timestamp=$(echo "$user_info" | grep -oP 'STARTDATE=\K\d+')
-converted_date="Account creation date: $(date -d "@$timestamp")"
-user_info=$(echo "$user_info" | sed '/STARTDATE=/d')
-echo -e "$user_info\n$converted_date"
-routingRem=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "cat /etc/remotedomains 2>/dev/null | grep $domain")
-
-if [ -n "$routingRem" ]; then
-    echo "Email Routing: Remote Mail Exchanger"
-else
-    echo "Email Routing: Local Mail Exchanger"
-fi
-
-
 	print_in_frame "Number of connections to ports and TTFB"
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
             ssh_port443=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
@@ -614,7 +596,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
             echo "$response_time"
 
             print_in_frame "ModSec"
-		modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record.web-hosting.com "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 1")
+		modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record.web-hosting.com "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
             date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "date")
 
             if [ -n "$modsec" ]; then
@@ -678,24 +660,6 @@ while [[ -z "$server_record_new" ]]; do
                  read -p "Enter the full name of the server: " server_record_new
             done
 
-print_in_frame "cPanel info"
- server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-user=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record_new" "sudo /scripts/whoowns $domain")
-user_info=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/local/sbin/cat.sh /var/cpanel/users/$user 2>/dev/null | grep -E 'USER=|PLAN=|IP=|MAX_EMAIL_PER_HOUR=|CONTACTEMAIL=|MAXADDON=|MAXFTP=|MAXPOP=|MAXSQL=|MAXSUB=|STARTDATE='" | sed -E "s/USER=/cPanel username: /; s/PLAN=/Hosting Plan: /; s/IP=/cPanel  IP: /; s/MAX_EMAIL_PER_HOUR=/Maximum emails per hour: /; s/CONTACTEMAIL=/Contact email: /; s/MAXADDON=/Maximum addons: /; s/MAXFTP=/Maximum FTP accounts: /; s/MAXPOP=/Maximum email accounts: /; s/MAXSUB=/Maximum subdomains: /; s/MAXSQL=/Maximum databases: /")
-
-timestamp=$(echo "$user_info" | grep -oP 'STARTDATE=\K\d+')
-converted_date="Account creation date: $(date -d "@$timestamp")"
-user_info=$(echo "$user_info" | sed '/STARTDATE=/d')
-echo -e "$user_info\n$converted_date"
-routingRem=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "cat /etc/remotedomains 2>/dev/null | grep $domain")
-
-if [ -n "$routingRem" ]; then
-    echo "Email Routing: Remote Mail Exchanger"
-else
-    echo "Email Routing: Local Mail Exchanger"
-fi
-
-
 print_in_frame "Number of connections to ports and TTFB"
 ssh_port443_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
 ssh_port80_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")
@@ -718,7 +682,7 @@ echo "$response_time"
 
 print_in_frame "ModSec"
 domain="$domain"
-modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 1")
+modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
 date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "date")
 
 if [ -n "$modsec" ]; then
@@ -747,11 +711,6 @@ fi
 
  print_in_frame "Logs"
 
- print_in_frame_records "Redirection"
-location=$(wget -S --spider --max-redirect=0 -O /dev/null $domain 2>&1 | grep "Location:" | sed 's/\[following\]//g' | sed 's/Location: //g' | sed 's/[^/]*\/\/\([^@]*@\)\?\([^:/]*\).*/\2/')
-echo "Current domain: https://$domain"
-echo "Redirects to: https://$location"
-echo
 print_in_frame_records "Cron"
 echo -e "\e[3;36mChecking the log of recently triggered cron jobs of a cPanel account.\e[0m"
 echo
@@ -981,10 +940,6 @@ fi
             echo -e "----- $ns ----- $ip ---- "
         done <<< "$ns_records"
     fi
-
-
- 
-echo -e "\e[96mYou can check more about the script like this:\e[0m\e[33m dom -help\e[0m"
 
     echo
     echo -e "\e[96m###################################################################################################################################################\e[0m"
