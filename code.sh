@@ -908,9 +908,7 @@ echo
     fi
 	echo
 
-
-
-    output_serverHold=$(whois "$1" | grep -i "serverHold")
+output_serverHold=$(whois "$1" | grep -i "serverHold")
 output_clientHold=$(whois "$1" | grep -i "clientHold")
 
 if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
