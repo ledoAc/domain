@@ -167,7 +167,7 @@ print_in_frame_dom "=====================| MYSQL |====================="
             found_mysql=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
 
 
 echo
@@ -231,7 +231,7 @@ print_in_frame "Scan"
                 1)
                     scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
                     echo "Scan in progress..."
-                    echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
+		    echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
                 2)
                     scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
@@ -672,7 +672,6 @@ echo -e "\e[3;36mSearching through cPanel login log. This log shows a list of fa
 echo
 login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $user /usr/local/cpanel/logs/login_log | tail -n 5")
 echo "$login"
-echo
 print_in_frame_records "FTP"
 echo -e "\e[3;36mSearching through the system FTP log. This log stores valuable, non-debug and non-critical messages. This log should be considered the "general system activity" log.\e[0m"
 echo
