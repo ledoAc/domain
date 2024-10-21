@@ -459,7 +459,7 @@ fi
 
             print_in_frame "HAProxy"
             echo -e "\e[3;36mLooking for an IP in HAProxy block lists. \e[0m"
-haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $input_ip /var/log/haproxy.log | tail -n 5")
+haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
             echo "$haproxy"
 
 
@@ -503,7 +503,7 @@ fi
 
             print_in_frame "HAProxy"
             echo -e "\e[3;36mLooking for an IP in HAProxy block lists. \e[0m"
-haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $input_ip /var/log/haproxy.log | tail -n 5")
+haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
             echo "$haproxy"
 
             echo
