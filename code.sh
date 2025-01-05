@@ -117,7 +117,7 @@ while IFS= read -r line; do
     if $found_cpu_mem; then
     else "$line"
         if [[ $line == *"=====================| CPU & MEM |====================="* ]]; then
-        eho
+        echo
             print_in_frame_dom "=====================| CPU & MEM |====================="
             found_cpu_mem=true
         fi
