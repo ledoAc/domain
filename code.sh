@@ -111,9 +111,17 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
 echo
 
+found_cpu_mem=false
+
 while IFS= read -r line; do
-    echo "$line"  # Просто вивести кожен рядок без перевірки
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
+    if [[ "$line" == *"CPU & MEM"* ]]; then
+        if ! $found_cpu_mem; then
+            print_in_frame_dom "=====================| CPU & MEM |====================="
+            found_cpu_mem=true
+        fi
+    fi
+    echo "$line"
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null)
 
 
 found_mysql=false
