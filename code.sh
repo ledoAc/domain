@@ -115,13 +115,10 @@ found_cpu_mem=false
 
 while IFS= read -r line; do
     if $found_cpu_mem; then
-        # Зміна кольору поточного рядка, якщо вже знайдено заголовок
-        echo "$(tput setaf 2)$line$(tput sgr0)"  # зелений колір для рядка
-    else
+    else "$line"
         if [[ $line == *"=====================| CPU & MEM |====================="* ]]; then
-            echo
-            # Виведення заголовка в кольорі
-            print_in_frame_dom "$(tput setaf 2)=====================| CPU & MEM |=====================$(tput sgr0)"
+        eho
+            print_in_frame_dom "=====================| CPU & MEM |====================="
             found_cpu_mem=true
         fi
     fi
