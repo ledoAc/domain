@@ -131,6 +131,7 @@ echo
 found_cpu_mem=false
 
 while IFS= read -r line; do
+    echo "Line: <$line>"  # Виведення для перевірки рядків
     if $found_cpu_mem; then
         echo "$line"
     else
@@ -142,7 +143,6 @@ while IFS= read -r line; do
     fi
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
 
-echo "Done"
 
 
 
