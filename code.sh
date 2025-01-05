@@ -114,17 +114,14 @@ echo
 found_cpu_mem=false
 
 while IFS= read -r line; do
-    if $found_cpu_mem; then
-        # Зміна кольору поточного рядка, якщо вже знайдено заголовок
-        echo "$(tput setaf 2)$line$(tput sgr0)"  # зелений колір для рядка
-    else
-        if [[ $line == *"=====================| CPU & MEM |====================="* ]]; then
-            echo
-            # Виведення заголовка в кольорі
+    if [[ "$line" == *"CPU & MEM"* ]]; then
+        if ! $found_cpu_mem; then
+            # Зміна кольору за допомогою ANSI-кодів (наприклад, зелений)
             print_in_frame_dom "$(tput setaf 2)=====================| CPU & MEM |=====================$(tput sgr0)"
             found_cpu_mem=true
         fi
     fi
+    echo "$line"
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null)
 
 
