@@ -116,8 +116,7 @@ found_cpu_mem=false
 while IFS= read -r line; do
     if [[ "$line" == *"CPU & MEM"* ]]; then
         if ! $found_cpu_mem; then
-            # Зміна кольору за допомогою ANSI-кодів (наприклад, зелений)
-            print_in_frame_dom "$(tput setaf 2)=====================| CPU & MEM |=====================$(tput sgr0)"
+            print_in_frame_dom "=====================| CPU & MEM |====================="
             found_cpu_mem=true
         fi
     fi
