@@ -127,6 +127,7 @@ done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q 
 
 
 echo
+echo "Hello"
 
 found_cpu_mem=false
 
@@ -141,7 +142,7 @@ while IFS= read -r line; do
         fi
     fi
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
-
+echo
 
 echo -e "\e[96m####################################################################################################################################################\e[0"
 
