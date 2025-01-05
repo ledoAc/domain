@@ -111,21 +111,9 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
 done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
 echo
 
-found_cpu_mem=false
-
 while IFS= read -r line; do
-    # Перевірка, чи знайдено рядок "CPU & MEM"
-    if $found_cpu_mem; then
-        echo "$line"  # Просто вивести рядок
-    else
-        # Якщо рядок містить "=====================| CPU & MEM |====================="
-        if [[ "$line" == *"=====================| CPU & MEM |====================="* ]]; then
-            echo  # Вивести порожній рядок перед виведенням блоку
-            echo "=====================| CPU & MEM |====================="  # Вивести результат без кольору
-            found_cpu_mem=true
-        fi
-    fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+    echo "$line"  # Просто вивести кожен рядок без перевірки
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
 
 
 found_mysql=false
