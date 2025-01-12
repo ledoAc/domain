@@ -204,29 +204,37 @@ if [ "$#" -eq 2 ]; then
         web_serv=$(dig +short -x "$serv_a_records")
 print_in_frame "Scan"
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
-            server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
-            echo "Select scan type:"
-            echo "1. Scan"
-            echo "2. Scan with quarantine"
-            read -p "Your choice (1 or 2): " CHOICE
+    server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+    
+    if [ -z "$server_record" ]; then
+        echo "Error: Server record not found. Exiting."
+        exit 1
+    fi
 
-            case $CHOICE in
-                1)
-                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
-                    echo "Scan in progress..."
-                    echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
-                    ;;
-                2)
-                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
-                    echo "Scan with quarantine in progress..."
-                    echo "Scan report: tail /home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt"
-                    ;;
-                *)
-                    echo "Invalid choice. Please choose 1 or 2."
-                    exit 1
-                    ;;
-            esac
+    cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
+    
+    if [ -z "$cuser" ]; then
+        echo "Error: Unable to determine user for domain $domain. Exiting."
+        exit 1
+    fi
+    
+    echo "Select scan type:"
+    echo "1. Scan"
+    read -p "Your choice (1): " CHOICE
+
+    case $CHOICE in
+        1)
+            scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
+            echo "Scan in progress..."
+            echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
+            ;;
+        *)
+            echo "Invalid choice. Please choose 1."
+            exit 1
+            ;;
+    esac
+fi
+
 
             echo
             echo -e "\e[96m####################################################################################################################################################\e[0}"
