@@ -246,8 +246,7 @@ print_in_frame "Scan"
             cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /scripts/whoowns $domain")
             echo "Select scan type:"
             echo "1. Scan"
-            echo "2. Scan with quarantine"
-            read -p "Your choice (1 or 2): " CHOICE
+            read -p "Your choice (1): " CHOICE
 
             case $CHOICE in
                 1)
@@ -255,13 +254,9 @@ print_in_frame "Scan"
                     echo "Scan in progress..."
 		    echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
                     ;;
-                2)
-                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt\" --quarantine /opt/cxs/quarantine")
-                    echo "Scan with quarantine in progress..."
-                    echo "Scan report: tail /home/$cuser/scanreport-$cuser-quarantine-$(date '+%b_%d_%Y_%Hh%Mm').txt"
-                    ;;
+        
                 *)
-                    echo "Invalid choice. Please choose 1 or 2."
+                    echo "Invalid choice. Please choose 1"
                     exit 1
                     ;;
             esac
