@@ -233,7 +233,6 @@ print_in_frame "Scan"
             exit 1
             ;;
     esac
-fi
 
 
             echo
