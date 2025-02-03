@@ -137,7 +137,6 @@ disable_plugins_and_htaccess() {
 # Викликаємо перевірки
 get_last_error_log
 check_permissions
-check_modified_files
 
 # Запит на вибір дії
 echo -e "${YELLOW}Обери дію:${RESET}"
