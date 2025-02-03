@@ -11,7 +11,7 @@ RESET='\033[0m'
 
 log_message() {
     local message="$1"
-    echo -e "$message"
+    echo -e "$message" 
 }
 
 # Функція для перевірки CMS
