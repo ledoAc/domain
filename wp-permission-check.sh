@@ -10,6 +10,7 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 ORANGE='\033[0;38;5;214m'
+LIGHT_GREEN='\033[1;32m'
 
 # Функція для логування
 log_message() {
@@ -65,7 +66,7 @@ check_permissions() {
 
     # Якщо не було файлів або папок з неправильними правами, вивести повідомлення
     if [ "$incorrect_files_count" -eq 0 ] && [ "$incorrect_folders_count" -eq 0 ]; then
-        log_message "${GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
+        log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
 check_database_errors() {
