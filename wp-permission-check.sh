@@ -121,14 +121,16 @@ check_permissions() {
         log_message "${GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
+# Перевірка версії Magento через composer.json
 check_magento_version() {
-    if [ -f "$wp_path/bin/magento" ]; then
-        magento_version=$(php "cat composer.json | grep '"version":'")
+    if [ -f "$wp_path/composer.json" ]; then
+        magento_version=$(cat "$wp_path/composer.json" | grep '"version":' | awk -F '":' '{print $2}' | tr -d '",[:space:]')
         log_message "${BLUE}Версія Magento: $magento_version${RESET}"
     else
-        log_message "${YELLOW}Файл bin/magento не знайдений.${RESET}"
+        log_message "${YELLOW}Файл composer.json не знайдений.${RESET}"
     fi
 }
+
 # Функція для виправлення прав доступу
 fix_permissions() {
     log_message "${GREEN}Виправлення прав доступу...${RESET}"
