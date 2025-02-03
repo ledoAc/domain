@@ -113,7 +113,8 @@ add_new_admin() {
 # Функція для оновлення ролі користувача
 update_user_role() {
     log_message "${GREEN}Оновлення ролі користувача...${RESET}"
-
+    # Виводимо список користувачів
+    wp user list
     # Запитуємо ID користувача та нову роль
     read -p "Введіть ID користувача для оновлення ролі: " user_id
     read -p "Введіть нову роль (наприклад, subscriber, editor, administrator): " role
