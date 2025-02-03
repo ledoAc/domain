@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Отримуємо поточний шлях
 wp_path=$(pwd)
 
@@ -16,73 +15,15 @@ log_message() {
     echo -e "$message"
 }
 
-# Функція для перевірки CMS
-detect_cms() {
-    log_message "${GREEN}Перевірка встановленої CMS або скрипту...${RESET}"
-
-    if [ -f "wp-includes/version.php" ]; then
-        log_message "${BLUE}Виявлено WordPress${RESET}"
-        check_wp_version
-        check_permissions
-        check_log_file "wp-includes/version.php"
-        get_last_error_log
-        ask_action
-    elif [ -f "app/Mage.php" ]; then
-        log_message "${BLUE}Виявлено Magento${RESET}"
-        check_permissions
-        check_log_file "app/Mage.php"
-        get_last_error_log
-    elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
-        log_message "${BLUE}Виявлено Joomla${RESET}"
-        check_permissions
-        check_log_file "includes/defines.php"
-        get_last_error_log
-    elif [ -f "config/settings.inc.php" ]; then
-        log_message "${BLUE}Виявлено PrestaShop${RESET}"
-        check_permissions
-        check_log_file "config/settings.inc.php"
-        get_last_error_log
-    elif [ -f "sites/default/settings.php" ]; then
-        log_message "${BLUE}Виявлено Drupal${RESET}"
-        check_permissions
-        check_log_file "sites/default/settings.php"
-        get_last_error_log
-    elif [ -f "data/settings/config.php" ]; then
-        log_message "${BLUE}Виявлено OpenCart${RESET}"
-        check_permissions
-        check_log_file "data/settings/config.php"
-        get_last_error_log
-    elif [ -f "index.php" ] && grep -q "Yii::createWebApplication" index.php; then
-        log_message "${BLUE}Виявлено Yii Framework${RESET}"
-        check_permissions
-        check_log_file "index.php"
-        get_last_error_log
-    elif [ -f "thinkphp.php" ]; then
-        log_message "${BLUE}Виявлено ThinkPHP${RESET}"
-        check_permissions
-        check_log_file "thinkphp.php"
-        get_last_error_log
-    elif [ -f "symfony" ] || [ -d "vendor/symfony" ]; then
-        log_message "${BLUE}Виявлено Symfony${RESET}"
-        check_permissions
-        check_log_file "symfony"
-        get_last_error_log
-    else
-        log_message "${RED}CMS або скрипт не визначено${RESET}"
-    fi
-}
-
 # Перевірка на наявність файлу version.php
-check_wp_version() {
-    if [ -f "$wp_path/wp-includes/version.php" ]; then
-        version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
-        log_message "${BLUE}Версія WordPress: $version${RESET}"
-    else
-        log_message "${YELLOW}Файл version.php не знайдений.${RESET}"
-    fi
-}
+if [ -f "$wp_path/wp-includes/version.php" ]; then
+    version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
+    log_message "${BLUE}Версія WordPress: $version${RESET}"
+else
+    log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
+fi
 
-# Перевірка на наявність файлів з неправильними правами доступу
+# Функція для перевірки прав доступу
 check_permissions() {
     log_message "${GREEN}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
@@ -126,27 +67,26 @@ check_permissions() {
     fi
 }
 
-# Перевірка та виведення останнього рядка з лог-файлів
-check_log_file() {
-    local file="$1"
-    log_file="$wp_path/$file"
-    
-    if [ -f "$log_file" ]; then
-        last_modified=$(stat -c "%y" "$log_file")
-        last_log=$(tail -n 1 "$log_file")
-        log_message "${GREEN}Останній рядок з $file:${RESET} $last_log"
-        log_message "${GREEN}Дата останньої модифікації: $last_modified${RESET}"
-    else
-        log_message "${RED}Файл $file не знайдений.${RESET}"
-    fi
+# Функція для виправлення прав доступу
+fix_permissions() {
+    log_message "${GREEN}Виправлення прав доступу...${RESET}"
+
+    # Встановлюємо правильні права для файлів
+    find "$wp_path" -type f ! -perm 644 -exec chmod 644 {} \;
+
+    # Встановлюємо правильні права для папок
+    find "$wp_path" -type d ! -perm 755 -exec chmod 755 {} \;
+
+    # Перевіряємо, чи змінилися права доступу
+    log_message "${GREEN}Права доступу виправлені.${RESET}"
 }
 
-# Функція для отримання останнього рядка error_log
+# Функція для отримання останнього рядка error_log і дати його модифікації
 get_last_error_log() {
     error_log_file="./error_log"
     if [ -f "$error_log_file" ]; then 
-        last_modified=$(stat -c "%y" "$error_log_file")
-        last_log=$(tail -n 1 "$error_log_file")
+        last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
+        last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
         log_message "${GREEN}Last Modified:${RESET} $last_modified"
         log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
     else
@@ -154,6 +94,18 @@ get_last_error_log() {
     fi
 }
 
+# Функція для перевірки файлів, які відрізняються від дефолтних
+check_modified_files() {
+    log_message "${GREEN}Перевірка файлів, відмінних від дефолтних...${RESET}"
+    modified_files=$(wp core verify-checksums --format=json 2>/dev/null | jq -r '.checksums | to_entries[] | select(.value != null) | .key')
+
+    if [ -n "$modified_files" ]; then
+        log_message "${RED}Знайдено змінені або додані файли:${RESET}"
+        echo "$modified_files"
+    else
+        log_message "${GREEN}Всі файли відповідають дефолтним.${RESET}"
+    fi
+}
 
 # Функція для завантаження та заміни дефолтних файлів WordPress
 replace_default_files() {
@@ -193,29 +145,29 @@ disable_plugins_and_htaccess() {
     fi
 }
 
+# Викликаємо перевірки
+get_last_error_log
+check_permissions
+check_modified_files
+
 # Запит на вибір дії
-ask_action() {
-    echo -e "${YELLOW}Обери дію:${RESET}"
-    echo "1. Виправити права доступу"
-    echo "2. Відключити плагіни та .htaccess"
-    echo "3. Замінити дефолтні файли WordPress"
-    read -p "Введіть номер вибору (1/2/3): " choice
+echo -e "${YELLOW}Обери дію:${RESET}"
+echo "1. Виправити права доступу"
+echo "2. Відключити плагіни та .htaccess"
+echo "3. Замінити дефолтні файли WordPress"
+read -p "Введіть номер вибору (1/2/3): " choice
 
-    case $choice in
-        1)
-            fix_permissions
-            ;;
-        2)
-            disable_plugins_and_htaccess
-            ;;
-        3)
-            replace_default_files
-            ;;
-        *)
-            log_message "${RED}Невірний вибір!${RESET}"
-            ;;
-    esac
-}
-
-# Викликаємо перевірку CMS
-detect_cms
+case $choice in
+    1)
+        fix_permissions
+        ;;
+    2)
+        disable_plugins_and_htaccess
+        ;;
+    3)
+        replace_default_files
+        ;;
+    *)
+        log_message "${RED}Невірний вибір!${RESET}"
+        ;;
+esac
