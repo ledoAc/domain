@@ -78,19 +78,6 @@ check_database_errors() {
     fi
 }
 
-check_critical_urls() {
-    log_message "${GREEN}Перевірка доступності важливих URL-адрес...${RESET}"
-
-    # Перевіряємо доступність wp-login.php та wp-admin
-    for url in "wp-login.php" "wp-admin"; do
-        if curl -s -o /dev/null -w "%{http_code}" "$wp_path/$url" | grep -q "200"; then
-            log_message "${GREEN}$url доступний.${RESET}"
-        else
-            log_message "${RED}$url недоступний.${RESET}"
-        fi
-    done
-}
-
 # Функція для зміни пароля користувача
 change_user_password() {
     log_message "${GREEN}Зміна пароля для адміністратора...${RESET}"
