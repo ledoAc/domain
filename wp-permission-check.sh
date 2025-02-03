@@ -14,61 +14,7 @@ log_message() {
     echo -e "$message" 
 }
 
-# Функція для перевірки CMS
-detect_cms() {
-    log_message "${GREEN}Перевірка встановленої CMS або скрипту...${RESET}"
 
-    if [ -f "wp-includes/version.php" ]; then
-        log_message "${BLUE}Виявлено WordPress${RESET}"
-        check_wp_version
-        check_permissions
-        check_log_file "wp-includes/version.php"
-        get_last_error_log
-        ask_action
-    elif [ -f "app/Mage.php" ]; then
-        log_message "${BLUE}Виявлено Magento${RESET}"
-        
-        check_magento_version
-        
-    elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
-        log_message "${BLUE}Виявлено Joomla${RESET}"
-        check_permissions
-        check_log_file "includes/defines.php"
-        get_last_error_log
-    elif [ -f "config/settings.inc.php" ]; then
-        log_message "${BLUE}Виявлено PrestaShop${RESET}"
-        check_permissions
-        check_log_file "config/settings.inc.php"
-        get_last_error_log
-    elif [ -f "sites/default/settings.php" ]; then
-        log_message "${BLUE}Виявлено Drupal${RESET}"
-        check_permissions
-        check_log_file "sites/default/settings.php"
-        get_last_error_log
-    elif [ -f "data/settings/config.php" ]; then
-        log_message "${BLUE}Виявлено OpenCart${RESET}"
-        check_permissions
-        check_log_file "data/settings/config.php"
-        get_last_error_log
-    elif [ -f "index.php" ] && grep -q "Yii::createWebApplication" index.php; then
-        log_message "${BLUE}Виявлено Yii Framework${RESET}"
-        check_permissions
-        check_log_file "index.php"
-        get_last_error_log
-    elif [ -f "thinkphp.php" ]; then
-        log_message "${BLUE}Виявлено ThinkPHP${RESET}"
-        check_permissions
-        check_log_file "thinkphp.php"
-        get_last_error_log
-    elif [ -f "symfony" ] || [ -d "vendor/symfony" ]; then
-        log_message "${BLUE}Виявлено Symfony${RESET}"
-        check_permissions
-        check_log_file "symfony"
-        get_last_error_log
-    else
-        log_message "${RED}CMS або скрипт не визначено${RESET}"
-    fi
-}
 
 # Перевірка на наявність файлу version.php
 if [ -f "$wp_path/wp-includes/version.php" ]; then
@@ -197,8 +143,11 @@ disable_plugins_and_htaccess() {
 }
 
 # Викликаємо перевірки
-get_last_error_log
-check_permissions
+check_wp_version
+        check_permissions
+        check_log_file "wp-includes/version.php"
+        get_last_error_log
+        ask_action
 
 
 # Запит на вибір дії
