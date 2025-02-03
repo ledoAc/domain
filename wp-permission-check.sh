@@ -146,7 +146,7 @@ disable_plugins_and_htaccess() {
 check_wp_version
         check_permissions
         get_last_error_log
-        ask_action
+       
 
 
 # Запит на вибір дії
