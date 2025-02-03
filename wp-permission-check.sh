@@ -21,7 +21,7 @@ if [ -f "$wp_path/wp-includes/version.php" ]; then
     version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
     log_message "${BLUE}Версія WordPress: $version${RESET}"
 else
-    log_message "${YELLOW}Файл version.php не знайдений. Пропускаємо перевірку версії.${RESET}"
+    log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
 
 # Функція для перевірки прав доступу
@@ -82,12 +82,14 @@ fix_permissions() {
     log_message "${GREEN}Права доступу виправлені.${RESET}"
 }
 
-# Функція для отримання останнього рядка error_log
+# Функція для отримання останнього рядка error_log і дати його модифікації
 get_last_error_log() {
     error_log_file="./error_log"
     if [ -f "$error_log_file" ]; then
-        last_log=$(tail -n 1 "$error_log_file")
-        log_message "${GREEN}Останній рядок з error_log: $last_log${RESET}"
+        last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
+        last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
+        log_message "${GREEN}Last Modified:${RESET} $last_modified"
+        log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
     else
         log_message "${RED}Файл error_log не знайдений.${RESET}"
     fi
