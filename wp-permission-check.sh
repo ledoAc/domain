@@ -1,4 +1,4 @@
-#!bin/bash
+#!/bin/bash
 
 # Отримуємо поточний шлях
 wp_path=$(pwd)
@@ -23,6 +23,94 @@ if [ -f "$wp_path/wp-includes/version.php" ]; then
 else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
+
+# Перевірка на наявність оновлень WordPress
+check_wordpress_update() {
+    log_message "${GREEN}Перевірка на наявність оновлень WordPress...${RESET}"
+
+    # Перевіряємо, чи є нові оновлення за допомогою WP-CLI
+    if command -v wp &> /dev/null; then
+        wp core check-update
+    else
+        log_message "${RED}WP-CLI не знайдений. Оновлення неможливо перевірити.${RESET}"
+    fi
+}
+
+# Перевірка на помилки бази даних
+check_database_errors() {
+    log_message "${GREEN}Перевірка помилок бази даних...${RESET}"
+
+    # Перевіряємо базу даних на помилки за допомогою WP-CLI
+    if command -v wp &> /dev/null; then
+        wp db check
+    else
+        log_message "${RED}WP-CLI не знайдений. Перевірка бази даних неможлива.${RESET}"
+    fi
+}
+
+# Перевірка на наявність вразливих плагінів
+check_vulnerable_plugins() {
+    log_message "${GREEN}Перевірка плагінів на наявність вразливостей...${RESET}"
+
+    # Для перевірки плагінів на вразливості можемо використовувати сторонні API або бази даних (наприклад, WPScan API)
+    # Це може бути налаштовано як окремий скрипт для інтеграції з відповідними базами даних
+    # Для цього прикладу виведемо повідомлення
+    log_message "${YELLOW}Перевірка плагінів на вразливості не реалізована в даному скрипті.${RESET}"
+}
+
+# Перевірка кешування
+check_caching() {
+    log_message "${GREEN}Перевірка налаштувань кешування...${RESET}"
+
+    # Перевірка наявності плагінів кешування та налаштувань на сервері
+    if [ -d "$wp_path/wp-content/cache" ]; then
+        log_message "${BLUE}Кешування увімкнене. Папка кешу: $wp_path/wp-content/cache${RESET}"
+    else
+        log_message "${YELLOW}Кешування не знайдено або вимкнене.${RESET}"
+    fi
+}
+
+# Перевірка важливих URL-адрес
+check_critical_urls() {
+    log_message "${GREEN}Перевірка доступності важливих URL-адрес...${RESET}"
+
+    # Перевіряємо доступність wp-login.php та wp-admin
+    for url in "wp-login.php" "wp-admin"; do
+        if curl -s -o /dev/null -w "%{http_code}" "$wp_path/$url" | grep -q "200"; then
+            log_message "${GREEN}$url доступний.${RESET}"
+        else
+            log_message "${RED}$url недоступний.${RESET}"
+        fi
+    done
+}
+
+# Перевірка на наявність файлу .git
+check_git_files() {
+    log_message "${GREEN}Перевірка наявності файлів .git...${RESET}"
+
+    # Перевіряємо наявність файлів .git в каталозі
+    if [ -d "$wp_path/.git" ]; then
+        log_message "${RED}Файл .git знайдений в каталозі. Рекомендується видалити його.${RESET}"
+    else
+        log_message "${GREEN}Файл .git не знайдений.${RESET}"
+    fi
+}
+
+# Перевірка на налаштування безпеки
+check_security_settings() {
+    log_message "${GREEN}Перевірка налаштувань безпеки...${RESET}"
+
+    # Перевірка на наявність плагінів безпеки
+    if [ -d "$wp_path/wp-content/plugins" ]; then
+        if [ -d "$wp_path/wp-content/plugins/wordfence" ]; then
+            log_message "${GREEN}Плагін Wordfence знайдений. Безпека активована.${RESET}"
+        else
+            log_message "${YELLOW}Плагін Wordfence не знайдений. Рекомендується використовувати плагін для безпеки.${RESET}"
+        fi
+    else
+        log_message "${RED}Папка плагінів не знайдена.${RESET}"
+    fi
+}
 
 # Функція для перевірки прав доступу
 check_permissions() {
@@ -68,74 +156,15 @@ check_permissions() {
     fi
 }
 
-# Функція для виправлення прав доступу
-fix_permissions() {
-    log_message "${GREEN}Виправлення прав доступу...${RESET}"
-
-    # Встановлюємо правильні права для файлів
-    find "$wp_path" -type f ! -perm 644 -exec chmod 644 {} \;
-
-    # Встановлюємо правильні права для папок
-    find "$wp_path" -type d ! -perm 755 -exec chmod 755 {} \;
-
-    # Перевіряємо, чи змінилися права доступу
-    log_message "${GREEN}Права доступу виправлені.${RESET}"
-}
-
-# Функція для отримання останнього рядка error_log і дати його модифікації
-get_last_error_log() {
-    error_log_file="./error_log"
-    if [ -f "$error_log_file" ]; then 
-        last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
-        last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
-        log_message "${GREEN}Last Modified:${RESET} $last_modified"
-        log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
-    else
-        log_message "${RED}Файл error_log не знайдений.${RESET}"
-    fi
-}
-
-
-# Функція для завантаження та заміни дефолтних файлів WordPress
-replace_default_files() {
-    echo "Введіть версію WordPress, яку потрібно завантажити (наприклад, 6.4.3):"
-    read wp_version
-
-    if [ -z "$wp_version" ]; then
-        wp_version="6.4.3"  # Значення за замовчуванням
-    fi
-
-    log_message "${GREEN}Завантаження та заміна дефолтних файлів WordPress версії $wp_version...${RESET}"
-
-    # Завантажуємо та встановлюємо версію WordPress
-    wp core download --force --version="$wp_version" --path="$wp_path"
-
-    log_message "${GREEN}Дефолтні файли успішно замінено на версію $wp_version.${RESET}"
-}
-
-# Функція для відключення плагінів та .htaccess
-disable_plugins_and_htaccess() {
-    log_message "${GREEN}Відключення плагінів та .htaccess...${RESET}"
-
-    # Відключення плагінів (змінюємо права доступу до папки плагінів)
-    if [ -d "$wp_path/wp-content/plugins" ]; then
-        mv "$wp_path/wp-content/plugins" "$wp_path/wp-content/plugins-disabled"
-        log_message "${GREEN}Папка плагінів переміщена та відключена.${RESET}"
-    else
-        log_message "${RED}Папка плагінів не знайдена.${RESET}"
-    fi
-
-    # Відключення .htaccess (переміщуємо його)
-    if [ -f "$wp_path/.htaccess" ]; then
-        mv "$wp_path/.htaccess" "$wp_path/.htaccess-disabled"
-        log_message "${GREEN}.htaccess переміщено та відключено.${RESET}"
-    else
-        log_message "${RED}Файл .htaccess не знайдений.${RESET}"
-    fi
-}
-
 # Викликаємо перевірки
 get_last_error_log
+check_wordpress_update
+check_database_errors
+check_vulnerable_plugins
+check_caching
+check_critical_urls
+check_git_files
+check_security_settings
 check_permissions
 
 # Запит на вибір дії
