@@ -28,7 +28,7 @@ detect_cms() {
     elif [ -f "app/Mage.php" ]; then
         log_message "${BLUE}Виявлено Magento${RESET}"
         check_permissions
-        check_log_file "app/Mage.php"
+        check_magento_version
         get_last_error_log
     elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
         log_message "${BLUE}Виявлено Joomla${RESET}"
@@ -121,7 +121,14 @@ check_permissions() {
         log_message "${GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
-
+check_magento_version() {
+    if [ -f "$wp_path/bin/magento" ]; then
+        magento_version=$(php "cat composer.json | grep '"version":')
+        log_message "${BLUE}Версія Magento: $magento_version${RESET}"
+    else
+        log_message "${YELLOW}Файл bin/magento не знайдений.${RESET}"
+    fi
+}
 # Функція для виправлення прав доступу
 fix_permissions() {
     log_message "${GREEN}Виправлення прав доступу...${RESET}"
