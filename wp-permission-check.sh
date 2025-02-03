@@ -145,7 +145,6 @@ disable_plugins_and_htaccess() {
 # Викликаємо перевірки
 check_wp_version
         check_permissions
-        check_log_file "wp-includes/version.php"
         get_last_error_log
         ask_action
 
