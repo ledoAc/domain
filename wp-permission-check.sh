@@ -123,7 +123,7 @@ check_permissions() {
 }
 check_magento_version() {
     if [ -f "$wp_path/bin/magento" ]; then
-        magento_version=$(php "cat composer.json | grep '"version":')
+        magento_version=$(php "cat composer.json | grep '"version":'")
         log_message "${BLUE}Версія Magento: $magento_version${RESET}"
     else
         log_message "${YELLOW}Файл bin/magento не знайдений.${RESET}"
