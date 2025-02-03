@@ -33,7 +33,7 @@ check_permissions() {
     declare -A invalid_dirs
     declare -A invalid_files
     
-    find ./wp-content/plugins/ -type d | while read dir; do
+    find ./ -type d | while read dir; do
         perms=$(stat -c "%a" "$dir")
         if [ "$perms" != "755" ]; then
             ((invalid_dirs[$dir]++))
