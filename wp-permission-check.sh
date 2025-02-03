@@ -22,28 +22,51 @@ detect_cms() {
 
     if [ -f "wp-includes/version.php" ]; then
         log_message "${BLUE}Виявлено WordPress${RESET}"
-        # Викликаємо додаткові перевірки для WordPress
         check_wp_version
         check_permissions
-        check_modified_files
+        check_log_file "wp-includes/version.php"
         get_last_error_log
         ask_action
     elif [ -f "app/Mage.php" ]; then
         log_message "${BLUE}Виявлено Magento${RESET}"
+        check_permissions
+        check_log_file "app/Mage.php"
+        get_last_error_log
     elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
         log_message "${BLUE}Виявлено Joomla${RESET}"
+        check_permissions
+        check_log_file "includes/defines.php"
+        get_last_error_log
     elif [ -f "config/settings.inc.php" ]; then
         log_message "${BLUE}Виявлено PrestaShop${RESET}"
+        check_permissions
+        check_log_file "config/settings.inc.php"
+        get_last_error_log
     elif [ -f "sites/default/settings.php" ]; then
         log_message "${BLUE}Виявлено Drupal${RESET}"
+        check_permissions
+        check_log_file "sites/default/settings.php"
+        get_last_error_log
     elif [ -f "data/settings/config.php" ]; then
         log_message "${BLUE}Виявлено OpenCart${RESET}"
+        check_permissions
+        check_log_file "data/settings/config.php"
+        get_last_error_log
     elif [ -f "index.php" ] && grep -q "Yii::createWebApplication" index.php; then
         log_message "${BLUE}Виявлено Yii Framework${RESET}"
+        check_permissions
+        check_log_file "index.php"
+        get_last_error_log
     elif [ -f "thinkphp.php" ]; then
         log_message "${BLUE}Виявлено ThinkPHP${RESET}"
+        check_permissions
+        check_log_file "thinkphp.php"
+        get_last_error_log
     elif [ -f "symfony" ] || [ -d "vendor/symfony" ]; then
         log_message "${BLUE}Виявлено Symfony${RESET}"
+        check_permissions
+        check_log_file "symfony"
+        get_last_error_log
     else
         log_message "${RED}CMS або скрипт не визначено${RESET}"
     fi
@@ -55,7 +78,7 @@ check_wp_version() {
         version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
         log_message "${BLUE}Версія WordPress: $version${RESET}"
     else
-        log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
+        log_message "${YELLOW}Файл version.php не знайдений.${RESET}"
     fi
 }
 
@@ -103,26 +126,27 @@ check_permissions() {
     fi
 }
 
-# Функція для виправлення прав доступу
-fix_permissions() {
-    log_message "${GREEN}Виправлення прав доступу...${RESET}"
-
-    # Встановлюємо правильні права для файлів
-    find "$wp_path" -type f ! -perm 644 -exec chmod 644 {} \;
-
-    # Встановлюємо правильні права для папок
-    find "$wp_path" -type d ! -perm 755 -exec chmod 755 {} \;
-
-    # Перевіряємо, чи змінилися права доступу
-    log_message "${GREEN}Права доступу виправлені.${RESET}"
+# Перевірка та виведення останнього рядка з лог-файлів
+check_log_file() {
+    local file="$1"
+    log_file="$wp_path/$file"
+    
+    if [ -f "$log_file" ]; then
+        last_modified=$(stat -c "%y" "$log_file")
+        last_log=$(tail -n 1 "$log_file")
+        log_message "${GREEN}Останній рядок з $file:${RESET} $last_log"
+        log_message "${GREEN}Дата останньої модифікації: $last_modified${RESET}"
+    else
+        log_message "${RED}Файл $file не знайдений.${RESET}"
+    fi
 }
 
-# Функція для отримання останнього рядка error_log і дати його модифікації
+# Функція для отримання останнього рядка error_log
 get_last_error_log() {
     error_log_file="./error_log"
     if [ -f "$error_log_file" ]; then 
-        last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
-        last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
+        last_modified=$(stat -c "%y" "$error_log_file")
+        last_log=$(tail -n 1 "$error_log_file")
         log_message "${GREEN}Last Modified:${RESET} $last_modified"
         log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
     else
