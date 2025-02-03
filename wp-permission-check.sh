@@ -9,6 +9,9 @@ GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
+ORANGE='\033[0;38;5;214m'
+CYAN='\033[0;36m'
+
 
 # Функція для логування
 log_message() {
@@ -19,14 +22,14 @@ log_message() {
 # Перевірка на наявність файлу version.php
 if [ -f "$wp_path/wp-includes/version.php" ]; then
     version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
-    log_message "${BLUE}Версія WordPress: $version${RESET}"
+    log_message "${ORANGE}Версія WordPress: $version${RESET}"
 else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
 
 # Функція для перевірки прав доступу
 check_permissions() {
-    log_message "${GREEN}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
+    log_message "${CYAN}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
     # Лічильники файлів та папок
     incorrect_files_count=0
