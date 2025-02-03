@@ -95,18 +95,6 @@ get_last_error_log() {
     fi
 }
 
-# Функція для перевірки файлів, які відрізняються від дефолтних
-check_modified_files() {
-    log_message "${GREEN}Перевірка файлів, відмінних від дефолтних...${RESET}"
-    modified_files=$(wp core verify-checksums --format=json 2>/dev/null | jq -r '.checksums | to_entries[] | select(.value != null) | .key')
-
-    if [ -n "$modified_files" ]; then
-        log_message "${RED}Знайдено змінені або додані файли:${RESET}"
-        echo "$modified_files"
-    else
-        log_message "${GREEN}Всі файли відповідають дефолтним.${RESET}"
-    fi
-}
 
 # Функція для завантаження та заміни дефолтних файлів WordPress
 replace_default_files() {
