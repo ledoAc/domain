@@ -27,9 +27,9 @@ detect_cms() {
         ask_action
     elif [ -f "app/Mage.php" ]; then
         log_message "${BLUE}Виявлено Magento${RESET}"
-        check_permissions
+        
         check_magento_version
-        get_last_error_log
+        
     elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
         log_message "${BLUE}Виявлено Joomla${RESET}"
         check_permissions
