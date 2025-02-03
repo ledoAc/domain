@@ -16,15 +16,50 @@ log_message() {
     echo -e "$message"
 }
 
-# Перевірка на наявність файлу version.php
-if [ -f "$wp_path/wp-includes/version.php" ]; then
-    version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
-    log_message "${BLUE}Версія WordPress: $version${RESET}"
-else
-    log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
-fi
+# Функція для перевірки CMS
+detect_cms() {
+    log_message "${GREEN}Перевірка встановленої CMS або скрипту...${RESET}"
 
-# Функція для перевірки прав доступу
+    if [ -f "wp-includes/version.php" ]; then
+        log_message "${BLUE}Виявлено WordPress${RESET}"
+        # Викликаємо додаткові перевірки для WordPress
+        check_wp_version
+        check_permissions
+        check_modified_files
+        get_last_error_log
+        ask_action
+    elif [ -f "app/Mage.php" ]; then
+        log_message "${BLUE}Виявлено Magento${RESET}"
+    elif [ -f "includes/defines.php" ] && [ -f "libraries/cms/version/version.php" ]; then
+        log_message "${BLUE}Виявлено Joomla${RESET}"
+    elif [ -f "config/settings.inc.php" ]; then
+        log_message "${BLUE}Виявлено PrestaShop${RESET}"
+    elif [ -f "sites/default/settings.php" ]; then
+        log_message "${BLUE}Виявлено Drupal${RESET}"
+    elif [ -f "data/settings/config.php" ]; then
+        log_message "${BLUE}Виявлено OpenCart${RESET}"
+    elif [ -f "index.php" ] && grep -q "Yii::createWebApplication" index.php; then
+        log_message "${BLUE}Виявлено Yii Framework${RESET}"
+    elif [ -f "thinkphp.php" ]; then
+        log_message "${BLUE}Виявлено ThinkPHP${RESET}"
+    elif [ -f "symfony" ] || [ -d "vendor/symfony" ]; then
+        log_message "${BLUE}Виявлено Symfony${RESET}"
+    else
+        log_message "${RED}CMS або скрипт не визначено${RESET}"
+    fi
+}
+
+# Перевірка на наявність файлу version.php
+check_wp_version() {
+    if [ -f "$wp_path/wp-includes/version.php" ]; then
+        version=$(grep "\$wp_version =" "$wp_path/wp-includes/version.php" | cut -d "'" -f 2)
+        log_message "${BLUE}Версія WordPress: $version${RESET}"
+    else
+        log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
+    fi
+}
+
+# Перевірка на наявність файлів з неправильними правами доступу
 check_permissions() {
     log_message "${GREEN}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
@@ -146,29 +181,29 @@ disable_plugins_and_htaccess() {
     fi
 }
 
-# Викликаємо перевірки
-get_last_error_log
-check_permissions
-check_modified_files
-
 # Запит на вибір дії
-echo -e "${YELLOW}Обери дію:${RESET}"
-echo "1. Виправити права доступу"
-echo "2. Відключити плагіни та .htaccess"
-echo "3. Замінити дефолтні файли WordPress"
-read -p "Введіть номер вибору (1/2/3): " choice
+ask_action() {
+    echo -e "${YELLOW}Обери дію:${RESET}"
+    echo "1. Виправити права доступу"
+    echo "2. Відключити плагіни та .htaccess"
+    echo "3. Замінити дефолтні файли WordPress"
+    read -p "Введіть номер вибору (1/2/3): " choice
 
-case $choice in
-    1)
-        fix_permissions
-        ;;
-    2)
-        disable_plugins_and_htaccess
-        ;;
-    3)
-        replace_default_files
-        ;;
-    *)
-        log_message "${RED}Невірний вибір!${RESET}"
-        ;;
-esac
+    case $choice in
+        1)
+            fix_permissions
+            ;;
+        2)
+            disable_plugins_and_htaccess
+            ;;
+        3)
+            replace_default_files
+            ;;
+        *)
+            log_message "${RED}Невірний вибір!${RESET}"
+            ;;
+    esac
+}
+
+# Викликаємо перевірку CMS
+detect_cms
