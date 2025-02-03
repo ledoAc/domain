@@ -193,7 +193,6 @@ disable_plugins_and_htaccess() {
 get_last_error_log
 check_permissions
 check_database_errors
-check_critical_urls
 
 # Запит на вибір дії
 echo -e "${YELLOW}Обери дію:${RESET}"
