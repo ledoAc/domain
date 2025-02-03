@@ -105,8 +105,7 @@ check_modified_files() {
     else
         log_message "${GREEN}Всі файли відповідають дефолтним.${RESET}"
     fi
-}
-
+    }
 # Функція для завантаження та заміни дефолтних файлів WordPress
 replace_default_files() {
     echo "Введіть версію WordPress, яку потрібно завантажити (наприклад, 6.4.3):"
