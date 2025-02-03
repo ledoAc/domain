@@ -10,8 +10,6 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 ORANGE='\033[0;38;5;214m'
-CYAN='\033[0;36m'
-
 
 # Функція для логування
 log_message() {
@@ -29,7 +27,7 @@ fi
 
 # Функція для перевірки прав доступу
 check_permissions() {
-    log_message "${CYAN}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
+    log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
     # Лічильники файлів та папок
     incorrect_files_count=0
@@ -71,7 +69,7 @@ check_permissions() {
     fi
 }
 check_database_errors() {
-    log_message "${GREEN}Перевірка помилок бази даних...${RESET}"
+    log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
 
     # Перевіряємо базу даних на помилки за допомогою WP-CLI
     if command -v wp &> /dev/null; then
@@ -95,12 +93,12 @@ change_user_password() {
 
     # Оновлюємо пароль
     wp user update "$username" --user_pass="$new_password"
-    log_message "${GREEN}Пароль для користувача $username оновлено.${RESET}"
+    log_message "${ORANGE}Пароль для користувача $username оновлено.${RESET}"
 }
 
 # Функція для додавання нового адміністратора
 add_new_admin() {
-    log_message "${GREEN}Додавання нового адміністратора...${RESET}"
+    log_message "${ORANGE}Додавання нового адміністратора...${RESET}"
 
     # Запитуємо ім'я користувача, email та пароль
     read -p "Введіть ім'я нового користувача: " username
@@ -110,12 +108,12 @@ add_new_admin() {
 
     # Створюємо нового користувача з правами адміністратора
     wp user create "$username" "$email" --role=administrator --user_pass="$password"
-    log_message "${GREEN}Новий адміністратор $username доданий.${RESET}"
+    log_message "${ORANGE}Новий адміністратор $username доданий.${RESET}"
 }
 
 # Функція для оновлення ролі користувача
 update_user_role() {
-    log_message "${GREEN}Оновлення ролі користувача...${RESET}"
+    log_message "${ORANGE}Оновлення ролі користувача...${RESET}"
     # Виводимо список користувачів
     wp user list
     # Запитуємо ID користувача та нову роль
@@ -124,12 +122,12 @@ update_user_role() {
 
     # Оновлюємо роль користувача
     wp user update "$user_id" --role="$role"
-    log_message "${GREEN}Роль користувача з ID $user_id оновлено на $role.${RESET}"
+    log_message "${ORANGE}Роль користувача з ID $user_id оновлено на $role.${RESET}"
 }
 
 # Функція для виправлення прав доступу
 fix_permissions() {
-    log_message "${GREEN}Виправлення прав доступу...${RESET}"
+    log_message "${ORANGE}Виправлення прав доступу...${RESET}"
 
     # Встановлюємо правильні права для файлів
     find "$wp_path" -type f ! -perm 644 -exec chmod 644 {} \;
@@ -138,7 +136,7 @@ fix_permissions() {
     find "$wp_path" -type d ! -perm 755 -exec chmod 755 {} \;
 
     # Перевіряємо, чи змінилися права доступу
-    log_message "${GREEN}Права доступу виправлені.${RESET}"
+    log_message "${ORANGE}Права доступу виправлені.${RESET}"
 }
 
 # Функція для отримання останнього рядка error_log і дати його модифікації
@@ -147,8 +145,8 @@ get_last_error_log() {
     if [ -f "$error_log_file" ]; then 
         last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
         last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
-        log_message "${GREEN}Last Modified (error_log):${RESET} $last_modified"
-        log_message "${GREEN}Error_log:${RESET} $last_log"
+        log_message "${ORANGE}Last Modified (error_log):${RESET} $last_modified"
+        log_message "${ORANGE}Error_log:${RESET} $last_log"
     else
         log_message "${RED}Файл error_log не знайдений.${RESET}"
     fi
@@ -164,17 +162,17 @@ replace_default_files() {
         wp_version="6.4.3"  # Значення за замовчуванням
     fi
 
-    log_message "${GREEN}Завантаження та заміна дефолтних файлів WordPress версії $wp_version...${RESET}"
+    log_message "${ORANGE}Завантаження та заміна дефолтних файлів WordPress версії $wp_version...${RESET}"
 
     # Завантажуємо та встановлюємо версію WordPress
     wp core download --force --version="$wp_version" --path="$wp_path"
 
-    log_message "${GREEN}Дефолтні файли успішно замінено на версію $wp_version.${RESET}"
+    log_message "${ORANGE}Дефолтні файли успішно замінено на версію $wp_version.${RESET}"
 }
 
 # Функція для відключення плагінів та .htaccess
 disable_plugins_and_htaccess() {
-    log_message "${GREEN}Відключення плагінів та .htaccess...${RESET}"
+    log_message "${ORANGE}Відключення плагінів та .htaccess...${RESET}"
 
     # Відключення плагінів (змінюємо права доступу до папки плагінів)
     if [ -d "$wp_path/wp-content/plugins" ]; then
