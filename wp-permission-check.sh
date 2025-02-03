@@ -1,4 +1,5 @@
-#!/bin/bash
+#!bin/bash
+
 # Отримуємо поточний шлях
 wp_path=$(pwd)
 
@@ -9,12 +10,11 @@ YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 
+# Функція для логування
 log_message() {
     local message="$1"
-    echo -e "$message" 
+    echo -e "$message"
 }
-
-
 
 # Перевірка на наявність файлу version.php
 if [ -f "$wp_path/wp-includes/version.php" ]; then
@@ -67,15 +67,6 @@ check_permissions() {
         log_message "${GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
-# Перевірка версії Magento через composer.json
-check_magento_version() {
-    if [ -f "$wp_path/composer.json" ]; then
-        magento_version=$(cat "$wp_path/composer.json" | grep '"version":' | awk -F '":' '{print $2}' | tr -d '",[:space:]')
-        log_message "${BLUE}Версія Magento: $magento_version${RESET}"
-    else
-        log_message "${YELLOW}Файл composer.json не знайдений.${RESET}"
-    fi
-}
 
 # Функція для виправлення прав доступу
 fix_permissions() {
@@ -101,6 +92,19 @@ get_last_error_log() {
         log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
     else
         log_message "${RED}Файл error_log не знайдений.${RESET}"
+    fi
+}
+
+# Функція для перевірки файлів, які відрізняються від дефолтних
+check_modified_files() {
+    log_message "${GREEN}Перевірка файлів, відмінних від дефолтних...${RESET}"
+    modified_files=$(wp core verify-checksums --format=json 2>/dev/null | jq -r '.checksums | to_entries[] | select(.value != null) | .key')
+
+    if [ -n "$modified_files" ]; then
+        log_message "${RED}Знайдено змінені або додані файли:${RESET}"
+        echo "$modified_files"
+    else
+        log_message "${GREEN}Всі файли відповідають дефолтним.${RESET}"
     fi
 }
 
@@ -143,11 +147,9 @@ disable_plugins_and_htaccess() {
 }
 
 # Викликаємо перевірки
-check_wp_version
-        check_permissions
-        get_last_error_log
-       
-
+get_last_error_log
+check_permissions
+check_modified_files
 
 # Запит на вибір дії
 echo -e "${YELLOW}Обери дію:${RESET}"
