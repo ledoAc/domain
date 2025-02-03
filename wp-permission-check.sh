@@ -143,8 +143,8 @@ get_last_error_log() {
     if [ -f "$error_log_file" ]; then 
         last_modified=$(stat -c "%y" "$error_log_file")  # Отримуємо дату останньої модифікації
         last_log=$(tail -n 1 "$error_log_file")  # Отримуємо останній рядок
-        log_message "${GREEN}Last Modified:${RESET} $last_modified"
-        log_message "${GREEN}Останній рядок з error_log:${RESET} $last_log"
+        log_message "${GREEN}Last Modified (error_log):${RESET} $last_modified"
+        log_message "${GREEN}Error_log:${RESET} $last_log"
     else
         log_message "${RED}Файл error_log не знайдений.${RESET}"
     fi
