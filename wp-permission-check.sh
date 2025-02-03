@@ -1,5 +1,5 @@
 #!bin/bash
-
+clear
 # Отримуємо поточний шлях
 wp_path=$(pwd)
 
