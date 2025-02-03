@@ -95,6 +95,18 @@ get_last_error_log() {
     fi
 }
 
+# Функція для перевірки файлів, які відрізняються від дефолтних
+check_modified_files() {
+    log_message "${GREEN}Перевірка файлів, відмінних від дефолтних...${RESET}"
+    wp core verify-checksums --quiet
+    if [ $? -ne 0 ]; then
+        log_message "${RED}Знайдено змінені або додані файли!${RESET}"
+        wp core verify-checksums --format=json | jq -r '.checksums | to_entries[] | select(.value != "") | .key'
+    else
+        log_message "${GREEN}Всі файли відповідають дефолтним.${RESET}"
+    fi
+}
+
 # Функція для завантаження та заміни дефолтних файлів WordPress
 replace_default_files() {
     echo "Введіть версію WordPress, яку потрібно завантажити (наприклад, 6.4.3):"
@@ -136,6 +148,7 @@ disable_plugins_and_htaccess() {
 # Викликаємо перевірки
 get_last_error_log
 check_permissions
+check_modified_files
 
 # Запит на вибір дії
 echo -e "${YELLOW}Обери дію:${RESET}"
