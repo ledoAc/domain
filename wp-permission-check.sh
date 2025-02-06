@@ -82,10 +82,22 @@ check_database_errors() {
     fi
 }
 
-echo ${ORANGE}"Пошук файлів які не належать Wordpress..."${RESET}
+echo -e "${ORANGE}Пошук файлів, які не належать Wordpress...${RESET}"
 
- cdfind=$(find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php")
+cdfind=$(find . -type f \
+    -not -path "./wp-admin/*" \
+    -not -path "./wp-includes/*" \
+    -not -path "./wp-content/*" \
+    -not -name "wp-*" \
+    -not -name "index.php" \
+    -not -name "license.txt" \
+    -not -name ".htaccess" \
+    -not -name ".hcflag" \
+    -not -name "error_log" \
+    -not -name "readme.html")
+
 echo "$cdfind"
+
 
 # Функція для зміни пароля користувача
 change_user_password() {
