@@ -110,7 +110,7 @@ cdhtaccess=$(find . -type f -name ".htaccess")
 if [ -n "$cdhtaccess" ]; then
   echo -e "${GREEN}$cdhtaccess${RESET}"
 else
-  echo -e "${GREEN}Файли .htaccess не знайдено.${RESET}"
+  echo -e "${LIGHT_GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
 
 create_htaccess() {
@@ -132,7 +132,7 @@ RewriteRule . /index.php [L]
 
 # END WordPress
 EOL
-    echo "Файл .htaccess успішно створено."
+    echo "$(LIGHT_GREEN)Файл .htaccess успішно створено.${RESET}"
   fi
 }
 
