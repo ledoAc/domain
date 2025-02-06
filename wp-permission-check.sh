@@ -246,7 +246,8 @@ echo "4. Виправити права доступу"
 echo "5. Відключити плагіни та .htaccess"
 echo "6. Замінити дефолтні файли WordPress"
 echo "7. Видалити .htaccess файли"
-echo "8. Вихід"
+echo "8. Створити .htaccess файл"
+echo "9. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
