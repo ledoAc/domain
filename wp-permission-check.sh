@@ -113,6 +113,29 @@ else
   echo -e "${GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
 
+create_htaccess() {
+  htaccess_path="./.htaccess"
+  
+  if [[ -f "$htaccess_path" ]]; then
+    echo "Файл .htaccess вже існує."
+  else
+    cat > "$htaccess_path" <<EOL
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+EOL
+    echo "Файл .htaccess успішно створено."
+  fi
+}
+
 
 change_user_password() {
     log_message "${GREEN}Зміна пароля для адміністратора...${RESET}"
@@ -126,6 +149,7 @@ change_user_password() {
     wp user update "$username" --user_pass="$new_password"
     log_message "${ORANGE}Пароль для користувача $username оновлено.${RESET}"
 }
+
 
 add_new_admin() {
     log_message "${ORANGE}Додавання нового адміністратора...${RESET}"
@@ -248,8 +272,11 @@ case $choice in
         remove_htaccess_files
         ;;
     8)
-       exit 0
+       create_htaccess
        ;;
+    9) 
+        exit 0
+        ;;
     *)
         log_message "${RED}Невірний вибір!${RESET}"
         ;;
