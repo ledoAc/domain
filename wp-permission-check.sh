@@ -82,7 +82,7 @@ check_database_errors() {
     fi
 }
 
-echo "${ORANGE}Пошук файлів які не належать Wordpress...${RESET}"
+echo ${ORANGE}"Пошук файлів які не належать Wordpress..."${RESET}
 
  cdfind=$(find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php")
 echo "$cdfind"
