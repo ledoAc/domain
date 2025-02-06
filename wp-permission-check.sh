@@ -70,6 +70,22 @@ check_permissions() {
     fi
 }
 
+remove_htaccess_files() {
+  echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
+
+  # Знаходимо всі .htaccess файли
+  cdhtaccess=$(find . -type f -name ".htaccess")
+
+  # Якщо файли знайдено, видаляємо їх
+  if [ -n "$cdhtaccess" ]; then
+    for file in $cdhtaccess; do
+      rm "$file"
+      echo -e "${GREEN}Файл $file видалено.${RESET}"
+    done
+  else
+    echo -e "${RED}Файли .htaccess не знайдено.${RESET}"
+  fi
+}
 
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
@@ -235,7 +251,8 @@ echo "3. Оновити роль користувача"
 echo "4. Виправити права доступу"
 echo "5. Відключити плагіни та .htaccess"
 echo "6. Замінити дефолтні файли WordPress"
-echo "7. Вихід"
+echo "7. Видалити .htaccess файли"
+echo "8. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -258,8 +275,11 @@ case $choice in
         replace_default_files
         ;;
     7) 
-        exit 0 
+        remove_htaccess_files
         ;;
+    8)
+       exit 0
+       ;;
     *)
         log_message "${RED}Невірний вибір!${RESET}"
         ;;
