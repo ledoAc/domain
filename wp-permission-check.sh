@@ -98,6 +98,17 @@ cdfind=$(find . -type f \
 
 echo "$cdfind"
 
+echo -e "${ORANGE}Пошук файлів htaccess...${RESET}"
+
+cdhtaccess=$(find . -type f -name ".htaccess")
+
+if [ -n "$cdhtaccess" ]; then
+  echo -e "${GREEN}$cdhtaccess${RESET}"
+else
+  echo -e "${ORANGE}Файли .htaccess не знайдено.${RESET}"
+fi
+
+
 
 # Функція для зміни пароля користувача
 change_user_password() {
