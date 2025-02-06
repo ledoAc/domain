@@ -70,12 +70,6 @@ check_permissions() {
     fi
 }
 
-echo "Пошук підозрілих функцій у файлах..."
-
-# Пошук файлів, виключаючи певні директорії та файли
-
- cdfind=$(find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php")
-echo "$cdfind"
 
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
@@ -87,6 +81,11 @@ check_database_errors() {
         log_message "${RED}WP-CLI не знайдений. Перевірка бази даних неможлива.${RESET}"
     fi
 }
+
+echo "${ORANGE}Пошук файлів які не належать Wordpress...${RESET}"
+
+ cdfind=$(find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php")
+echo "$cdfind"
 
 # Функція для зміни пароля користувача
 change_user_password() {
