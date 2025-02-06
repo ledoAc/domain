@@ -121,7 +121,7 @@ cdhtaccess=$(find . -type f -name ".htaccess")
 if [ -n "$cdhtaccess" ]; then
   echo -e "${GREEN}$cdhtaccess${RESET}"
 else
-  echo -e "${ORANGE}Файли .htaccess не знайдено.${RESET}"
+  echo -e "${GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
 
 
