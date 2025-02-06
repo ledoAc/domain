@@ -117,7 +117,7 @@ create_htaccess() {
   htaccess_path="./.htaccess"
   
   if [[ -f "$htaccess_path" ]]; then
-    echo "Файл .htaccess вже існує."
+    echo -e "${LIGHT_GREEN}Файл .htaccess вже існує.${RESET}"
   else
     cat > "$htaccess_path" <<EOL
 # BEGIN WordPress
@@ -132,7 +132,7 @@ RewriteRule . /index.php [L]
 
 # END WordPress
 EOL
-    echo "$(LIGHT_GREEN)Файл .htaccess успішно створено.${RESET}"
+    echo -e "${LIGHT_GREEN}Файл .htaccess успішно створено.${RESET}"
   fi
 }
 
