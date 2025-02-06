@@ -73,8 +73,9 @@ check_permissions() {
 echo "Пошук підозрілих функцій у файлах..."
 
 # Пошук файлів, виключаючи певні директорії та файли
-find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php"
 
+ cdfind=$(find . -type f -not -path "./wp-admin/*" -not -path "./wp-includes/*" -not -path "./wp-content/*" -not -name "wp-*" -not -name "index.php")
+echo "$cdfind"
 
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
