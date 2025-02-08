@@ -2,23 +2,16 @@
 clear
 # Визначення шляху до сайту
 SITE_PATH="$(pwd)"
+get_last_error_log() {
+    error_log_file="./error_log"
+    if [ -f "$error_log_file" ]; then 
+        last_modified=$(stat -c "%y" "$error_log_file")  
+        last_log=$(tail -n 1 "$error_log_file")  
+        log_message "${ORANGE}Last Modified (error_log):${RESET} $last_modified"
+        log_message "${ORANGE}Error_log:${RESET} $last_log"
+    else
+        log_message "${RED}Файл error_log не знайдений.${RESET}"
+    fi
+}
 
-# Отримання версії WordPress
-if [[ -f "$SITE_PATH/wp-includes/version.php" ]]; then
-    WP_VERSION=$(grep -oP "\$wp_version = '\K[^']+" "$SITE_PATH/wp-includes/version.php")
-    echo "WordPress версія: $WP_VERSION"
-else
-    echo "Файл версії WordPress не знайдено!"
-fi
-
-# Пошук останнього зміненого лог-файлу
-LOG_DIR="$SITE_PATH/logs"
-LAST_LOG=$(ls -t "$LOG_DIR"/*.log 2>/dev/null | head -n 1)
-
-if [[ -n "$LAST_LOG" ]]; then
-    echo "Останній лог-файл: $LAST_LOG"
-    echo "Останній рядок логу:"
-    tail -n 1 "$LAST_LOG"
-else
-    echo "Лог-файли не знайдено!"
-fi
+get_last_error_log
