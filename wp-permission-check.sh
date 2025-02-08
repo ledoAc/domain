@@ -21,7 +21,7 @@ if [ -f "$wp_path/wp-includes/version.php" ]; then
 else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
-echo
+
 check_permissions() {
     log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
@@ -113,8 +113,7 @@ else
   echo -e "${LIGHT_GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
 echo
-userlist = $(wp user list)
-echo "$userlist"
+wp user list
 echo
 create_htaccess() {
   htaccess_path="./.htaccess"
