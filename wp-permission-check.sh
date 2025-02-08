@@ -233,6 +233,43 @@ disable_plugins_and_htaccess() {
         log_message "${RED}Файл .htaccess не знайдений.${RESET}"
     fi
 }
+backup_wordpress() {
+    SITE_PATH="$wp_path"  
+    BACKUP_PATH="$SITE_PATH/backups"   
+    DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+    DB_BACKUP="$BACKUP_PATH/db_backup_$DATE.sql"
+    ZIP_BACKUP="$BACKUP_PATH/wp_backup_$DATE.zip"
+
+    mkdir -p "$BACKUP_PATH"
+
+    echo "Експорт бази даних..."
+    cd "$SITE_PATH"
+    wp db export "$DB_BACKUP"
+
+    if [ $? -eq 0 ]; then
+        echo "Дамп БД збережено у $DB_BACKUP"
+    else
+        echo "Помилка експорту бази даних!"
+        exit 1
+    fi
+
+    echo "Архівування файлів WordPress..."
+
+    # Підрахунок кількості файлів для точного обчислення прогресу
+    FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
+
+    # Використовуємо pv для відображення прогресу у відсотках
+    find "$SITE_PATH" -type f | zip -r -q - "$ZIP_BACKUP" | pv -s $FILES_COUNT -n > /dev/null
+
+    if [ $? -eq 0 ]; then
+        echo "Бекап файлів збережено у $ZIP_BACKUP"
+    else
+        echo "Помилка архівування файлів!"
+        exit 1
+    fi
+
+    echo "Процес бекапу завершено!"
+}
 
 
 
