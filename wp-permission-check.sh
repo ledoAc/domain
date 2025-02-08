@@ -70,6 +70,14 @@ user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list --fields=ID,user_login,user_email --format=table
 }
+url(){
+home_url=$(wp option get home)
+siteurl=$(wp option get siteurl)
+
+echo "Home URL: $home_url"
+echo "Site URL: $siteurl"
+
+}
 
 
 remove_htaccess_files() {
@@ -332,7 +340,7 @@ get_last_error_log
 check_permissions
 check_database_errors
 user_list
-url()
+url
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
