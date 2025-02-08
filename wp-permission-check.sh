@@ -11,6 +11,10 @@ ORANGE='\033[0;38;5;214m'
 LIGHT_GREEN='\033[1;32m'
 AIOWPM_URL="https://github.com/d0n601/All-In-One-WP-Migration-With-Import/archive/master.zip"
 
+function run_wpcli {
+  php -d memory_limit=512M /usr/local/sbin/wp "$@"
+}
+
 log_message() {
     local message="$1"
     echo -e "$message"
