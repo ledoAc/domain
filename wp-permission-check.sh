@@ -61,7 +61,6 @@ check_permissions() {
         log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
-echo
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
 
@@ -76,7 +75,6 @@ remove_htaccess_files() {
     echo -e "${RED}Файли .htaccess не знайдено.${RESET}"
   fi
 }
-echo
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
 
@@ -86,7 +84,7 @@ check_database_errors() {
         log_message "${RED}WP-CLI не знайдений. Перевірка бази даних неможлива.${RESET}"
     fi
 }
-echo
+
 echo -e "${ORANGE}Пошук файлів, які не належать Wordpress...${RESET}"
 
 cdfind=$(find . -type f \
@@ -102,7 +100,7 @@ cdfind=$(find . -type f \
     -not -name "readme.html")
 
 echo "$cdfind"
-echo
+
 echo -e "${ORANGE}Пошук файлів htaccess...${RESET}"
 
 cdhtaccess=$(find . -type f -name ".htaccess")
@@ -112,9 +110,7 @@ if [ -n "$cdhtaccess" ]; then
 else
   echo -e "${LIGHT_GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
-echo
-wp user list
-echo
+
 create_htaccess() {
   htaccess_path="./.htaccess"
   
@@ -267,6 +263,7 @@ backup_wordpress() {
     echo "Процес бекапу завершено!"
 }
 
+echo "wp user list"
 
 
 get_last_error_log
