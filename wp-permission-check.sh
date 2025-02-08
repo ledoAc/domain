@@ -263,16 +263,13 @@ backup_wordpress() {
 
     echo "Архівування файлів WordPress..."
 
-    # Підрахунок кількості файлів для точного обчислення прогресу
     FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
     FILES_PROCESSED=0
 
-    # Архівуємо файли і виводимо прогрес
     for file in $(find "$SITE_PATH" -type f); do
         zip -q "$ZIP_BACKUP" "$file"
         FILES_PROCESSED=$((FILES_PROCESSED + 1))
         
-        # Виводимо прогрес у відсотках
         PROGRESS=$((FILES_PROCESSED * 100 / FILES_COUNT))
         echo -ne "Прогрес: $PROGRESS%\r"
     done
