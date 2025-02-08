@@ -263,18 +263,25 @@ backup_wordpress() {
 
     echo "Архівування файлів WordPress..."
 
-    FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
-    FILES_PROCESSED=0
+    TOTAL_FILES=$(find "$SITE_PATH" -type f | wc -l)
+    PROCESSED_FILES=0
 
-    zip -r -q "$ZIP_BACKUP" "$SITE_PATH" &
-    ZIP_PID=$!
-
-    while kill -0 $ZIP_PID 2>/dev/null; do
-        FILES_PROCESSED=$(find "$SITE_PATH" -type f | wc -l)
-        PROGRESS=$((FILES_PROCESSED * 100 / FILES_COUNT))
-        echo -ne "Прогрес: [$PROGRESS%] \r"
-        sleep 1
-    done
+    zip -r -v "$ZIP_BACKUP" "$SITE_PATH" | awk -v total="$TOTAL_FILES" '
+        BEGIN { 
+            printf "Прогрес: ["
+        }
+        {
+            if ($0 ~ /adding:/) {
+                processed++
+                percent = int((processed / total) * 100)
+                printf "\rПрогрес: [%-50s] %d%%", substr("##################################################", 1, percent / 2), percent
+                fflush(stdout)
+            }
+        }
+        END {
+            printf "]\n"
+        }
+    '
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
@@ -285,6 +292,7 @@ backup_wordpress() {
 
     echo "Процес бекапу завершено!"
 }
+
 
 
  restore_wp_backup() {
