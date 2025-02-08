@@ -251,7 +251,14 @@ backup_wordpress() {
     fi
 
     echo "Архівування файлів WordPress..."
-    zip -r "$ZIP_BACKUP" "$SITE_PATH"
+    zip -r -q "$ZIP_BACKUP" "$SITE_PATH" > /dev/null &
+
+    ZIP_PID=$!
+    while kill -0 $ZIP_PID 2>/dev/null; do
+        sleep 1
+        echo -n "."
+    done
+    echo
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
@@ -264,12 +271,14 @@ backup_wordpress() {
 }
 
 echo "Список користувачів WordPress:"
+userlist(){
 wp user list --fields=ID,user_login,user_email --format=table
-
+}
 
 get_last_error_log
 check_permissions
 check_database_errors
+userlist
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
