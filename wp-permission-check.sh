@@ -263,7 +263,8 @@ backup_wordpress() {
     echo "Процес бекапу завершено!"
 }
 
-echo "wp user list"
+echo "Список користувачів WordPress:"
+wp user list --fields=ID,user_login,user_email --format=table
 
 
 get_last_error_log
