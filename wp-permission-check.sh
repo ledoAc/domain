@@ -70,15 +70,7 @@ user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list --fields=ID,user_login,user_email --format=table
 }
-url(){
-    echo -e "${ORANGE}Домени в базі даних${RESET}"
 
-home_url=$(wp option get home)
-siteurl=$(wp option get siteurl)
-
-echo "Home URL: $home_url"
-echo "Site URL: $siteurl"
-}
 
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
