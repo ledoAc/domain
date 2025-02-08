@@ -270,10 +270,10 @@ backup_wordpress() {
     echo "Процес бекапу завершено!"
 }
 
-echo "Список користувачів WordPress:"
+
 userlist(){
+echo "Список користувачів WordPress:"
 wp user list --fields=ID,user_login,user_email --format=table
-wp db check
 }
 
 get_last_error_log
