@@ -62,9 +62,10 @@ check_permissions() {
     fi
 }
 user_list() {
-echo -e "${ORANGE}Список користувачів WordPress:${RESET"
-wp user list --fields=ID,user_login,user_email --format=table
+    echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
+    wp user list --fields=ID,user_login,user_email --format=table
 }
+
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
 
