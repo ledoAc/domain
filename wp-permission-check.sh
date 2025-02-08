@@ -240,6 +240,7 @@ disable_plugins_and_htaccess() {
         log_message "${RED}Файл .htaccess не знайдений.${RESET}"
     fi
 }
+
 backup_wordpress() {
     SITE_PATH="$wp_path"  
     BACKUP_PATH="$SITE_PATH/backups"   
@@ -264,9 +265,19 @@ backup_wordpress() {
 
     # Підрахунок кількості файлів для точного обчислення прогресу
     FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
+    FILES_PROCESSED=0
 
-    # Використовуємо pv для відображення прогресу у відсотках
-    find "$SITE_PATH" -type f | zip -r -q - "$ZIP_BACKUP" | pv -s $FILES_COUNT -n > /dev/null
+    # Архівуємо файли і виводимо прогрес
+    for file in $(find "$SITE_PATH" -type f); do
+        zip -q "$ZIP_BACKUP" "$file"
+        FILES_PROCESSED=$((FILES_PROCESSED + 1))
+        
+        # Виводимо прогрес у відсотках
+        PROGRESS=$((FILES_PROCESSED * 100 / FILES_COUNT))
+        echo -ne "Прогрес: $PROGRESS%\r"
+    done
+
+    echo
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
