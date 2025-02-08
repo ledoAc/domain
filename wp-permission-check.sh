@@ -273,6 +273,31 @@ backup_wordpress() {
     echo "Процес бекапу завершено!"
 }
 
+import_latest_backup() {
+    BACKUP_DIR="wp-content/ai1wm-backups"
+    
+    if [[ ! -d "$BACKUP_DIR" ]]; then
+        echo "Папка з бекапами не знайдена: $BACKUP_DIR"
+        return 1
+    fi
+    
+    LATEST_BACKUP=$(ls -t $BACKUP_DIR/*.wpress | head -n 1)
+    
+    if [[ -z "$LATEST_BACKUP" ]]; then
+        echo "Бекап не знайдений в папці $BACKUP_DIR"
+        return 1
+    fi
+    
+    # Виконуємо імпорт знайденого бекапу через WP-CLI
+    wp ai1wm import "$LATEST_BACKUP" --overwrite
+    if [[ $? -eq 0 ]]; then
+        echo "Останній бекап успішно відновлено: $LATEST_BACKUP"
+    else
+        echo "Помилка при відновленні бекапу."
+    fi
+}
+
+
 
 
 
@@ -293,6 +318,7 @@ echo "7. Видалити .htaccess файли"
 echo "8. Створити .htaccess файл"
 echo "9. Створити бекап"
 echo "10. Вихід"
+echo "11. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -323,7 +349,10 @@ case $choice in
     9) 
         backup_wordpress
         ;;
-     10) 
+    11) 
+        import_latest_backup
+        ;;
+    10) 
         exit 0
         ;;
     *)
