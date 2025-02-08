@@ -266,15 +266,15 @@ backup_wordpress() {
     FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
     FILES_PROCESSED=0
 
-    for file in $(find "$SITE_PATH" -type f); do
-        zip -q "$ZIP_BACKUP" "$file"
-        FILES_PROCESSED=$((FILES_PROCESSED + 1))
-        
-        PROGRESS=$((FILES_PROCESSED * 100 / FILES_COUNT))
-        echo -ne "Прогрес: $PROGRESS%\r"
-    done
+    zip -r -q "$ZIP_BACKUP" "$SITE_PATH" &
+    ZIP_PID=$!
 
-    echo
+    while kill -0 $ZIP_PID 2>/dev/null; do
+        FILES_PROCESSED=$(find "$SITE_PATH" -type f | wc -l)
+        PROGRESS=$((FILES_PROCESSED * 100 / FILES_COUNT))
+        echo -ne "Прогрес: [$PROGRESS%] \r"
+        sleep 1
+    done
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
