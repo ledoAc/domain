@@ -335,6 +335,25 @@ backup_wordpress() {
   run_wpcli rewrite flush --hard
 }
 
+plugin_deactivate(){
+
+plugins=$(wp plugin list --format=table)
+
+echo "Оберіть плагін для деактивації (введіть номер):"
+echo "$plugins"
+
+read -p "Введіть номер плагіна: " plugin_number
+
+plugin_name=$(echo "$plugins" | sed -n "${plugin_number}p" | awk '{print $1}')
+
+if [ -n "$plugin_name" ]; then
+  wp plugin deactivate "$plugin_name"
+  echo "Плагін $plugin_name був деактивований."
+else
+  echo "Невірний номер плагіна."
+fi
+
+}
 
 
 get_last_error_log
@@ -355,7 +374,8 @@ echo "7. Видалити .htaccess файли"
 echo "8. Створити .htaccess файл"
 echo "9. Створити бекап"
 echo "10. Відновити бекап .wpess"
-echo "11. Вихід"
+echo "11. Відключити потрібний плагін"
+echo "12. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -390,6 +410,9 @@ case $choice in
         restore_wp_backup
         ;;
     11) 
+        plugin_deactivate
+        ;;
+    12)
         exit 0
         ;;
     *)
