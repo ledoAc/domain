@@ -62,7 +62,7 @@ check_permissions() {
     fi
 }
 userlist(){
-echo "Список користувачів WordPress:"
+echo -e "${ORANGE}Список користувачів WordPress:${RESET"
 wp user list --fields=ID,user_login,user_email --format=table
 }
 remove_htaccess_files() {
@@ -255,14 +255,10 @@ backup_wordpress() {
     fi
 
     echo "Архівування файлів WordPress..."
-    zip -r -q "$ZIP_BACKUP" "$SITE_PATH" > /dev/null &
 
-    ZIP_PID=$!
-    while kill -0 $ZIP_PID 2>/dev/null; do
-        sleep 1
-        echo -n "."
-    done
-    echo
+    FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
+
+    find "$SITE_PATH" -type f | zip -r -q - "$ZIP_BACKUP" | pv -s $FILES_COUNT -n > /dev/null
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
@@ -273,8 +269,6 @@ backup_wordpress() {
 
     echo "Процес бекапу завершено!"
 }
-
-
 
 
 get_last_error_log
