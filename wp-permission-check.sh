@@ -337,15 +337,24 @@ backup_wordpress() {
 
 plugin_deactivate(){
 
-plugins=$(wp plugin list --format=table)
+plugins=$(wp plugin list --format=csv --fields=name)
 
-echo "Оберіть плагін для деактивації (введіть номер):"
-echo "$plugins"
+# Перетворюємо на масив та виводимо з номерами
+i=1
+echo "Оберіть плагін для деактивації:"
+IFS=$'\n'  # Розбиваємо на рядки
+for plugin in $plugins; do
+    echo "$i. $plugin"
+    ((i++))
+done
 
+# Запитуємо у користувача номер плагіна
 read -p "Введіть номер плагіна: " plugin_number
 
-plugin_name=$(echo "$plugins" | sed -n "${plugin_number}p" | awk '{print $1}')
+# Отримуємо ім'я плагіна за номером
+plugin_name=$(echo "$plugins" | sed -n "${plugin_number}p")
 
+# Перевіряємо, чи плагін існує і деактивуємо його
 if [ -n "$plugin_name" ]; then
   wp plugin deactivate "$plugin_name"
   echo "Плагін $plugin_name був деактивований."
