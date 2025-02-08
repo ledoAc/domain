@@ -241,24 +241,6 @@ disable_plugins_and_htaccess() {
     fi
 }
 backup_wordpress() {
-    # Перевірка наявності wp-cli
-    if ! command -v wp &> /dev/null; then
-        echo "wp-cli не знайдений! Перевірте встановлення wp-cli."
-        exit 1
-    fi
-    
-    # Перевірка наявності pv
-    if ! command -v pv &> /dev/null; then
-        echo "pv не знайдений! Встановіть pv для відображення прогресу."
-        exit 1
-    fi
-    
-    # Перевірка наявності zip
-    if ! command -v zip &> /dev/null; then
-        echo "zip не знайдений! Встановіть zip для створення архівів."
-        exit 1
-    fi
-
     SITE_PATH="$wp_path"  
     BACKUP_PATH="$SITE_PATH/backups"   
     DATE=$(date +"%Y-%m-%d_%H-%M-%S")
@@ -283,11 +265,8 @@ backup_wordpress() {
     # Підрахунок кількості файлів для точного обчислення прогресу
     FILES_COUNT=$(find "$SITE_PATH" -type f | wc -l)
 
-    # Створення списку файлів для архівування
-    FILE_LIST=$(find "$SITE_PATH" -type f)
-
-    # Архівування файлів з прогресом
-    echo "$FILE_LIST" | zip -r -q "$ZIP_BACKUP" -@ | pv -s $FILES_COUNT -n > /dev/null
+    # Використовуємо pv для відображення прогресу у відсотках
+    find "$SITE_PATH" -type f | zip -r -q - "$ZIP_BACKUP" | pv -s $FILES_COUNT -n > /dev/null
 
     if [ $? -eq 0 ]; then
         echo "Бекап файлів збережено у $ZIP_BACKUP"
