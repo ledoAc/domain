@@ -297,7 +297,7 @@ import_latest_backup() {
         echo "Помилка при відновленні бекапу."
     fi
 }
-function restore_wp_backup {
+ restore_wp_backup() {
   [[ ! -f "${PWD}/wp-config.php" ]] && { echo "WordPress не знайдено"; return 1; }
   BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
   [[ -z "${BACKUPS[*]}" ]] && { echo "Бекап не знайдено"; return 1; }
