@@ -273,6 +273,7 @@ backup_wordpress() {
 echo "Список користувачів WordPress:"
 userlist(){
 wp user list --fields=ID,user_login,user_email --format=table
+wp db check
 }
 
 get_last_error_log
