@@ -61,7 +61,7 @@ check_permissions() {
         log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
-userlist(){
+user_list() {
 echo -e "${ORANGE}Список користувачів WordPress:${RESET"
 wp user list --fields=ID,user_login,user_email --format=table
 }
@@ -274,7 +274,7 @@ backup_wordpress() {
 get_last_error_log
 check_permissions
 check_database_errors
-userlist
+user_list
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
