@@ -73,6 +73,7 @@ user_list() {
 url_site(){
 home_url=$(wp option get home)
 siteurl=$(wp option get siteurl)
+echo -e "${ORANGE}Сайти в базі даних _options :${RESET}"
 
 echo "Home URL: $home_url"
 echo "Site URL: $siteurl"
