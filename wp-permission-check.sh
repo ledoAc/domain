@@ -276,71 +276,40 @@ backup_wordpress() {
 
 
  restore_wp_backup() {
- [[ ! -f "${PWD}/wp-config.php" ]] && { echo "No wordpress installation found in ${PWD}"; exit 1; }
-BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
-[[ -z "${BACKUPS[*]}" ]] && { echo "No .wpress backups found within ${PWD}"; exit 1; }
-php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please set PHP to 7.4 or 8.X"; exit 1; }
-  
-if [[ "${#BACKUPS[@]}" -gt 1 ]]; then
-  NUM=1
-  for i in "${BACKUPS[@]}"; do
-    echo "${NUM}. $i"
-    NUM=$((NUM+1))
-  done | column -t
-  
-  read -rp "Choose the number: " BACKUP_CHOICE
-  [[ ! "${BACKUP_CHOICE}" =~ ^[1-9]{1}[0-9]*$ ]] && { echo "Invalid choice"; exit 1; }
-  ARRAY_MAPPER=$((BACKUP_CHOICE-1))
-  [[ -z "${BACKUPS[${ARRAY_MAPPER}]}" ]] && { echo "Invalid choice"; exit 1; }
-  BACKUP_PATH="${BACKUPS[${ARRAY_MAPPER}]}"
-  
-else
-  BACKUP_PATH="${BACKUPS}"
-fi
-  
-echo "Selected backup: ${BACKUP_PATH}"
-  
-read -rp "Do you want to proceed? [y/n]: " CHOICE
-[[ ! "${CHOICE}" =~ ^[yY](es)?$ ]] && { echo "Ok, next time"; exit 1; }
-  
-BACKUP="$(awk -F/ '{print $NF}' <<<"${BACKUP_PATH}")"
-DIRNAME="$(dirname "${BACKUP_PATH}")"
-AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
-  
-if [[ "${DIRNAME}" != "${AI1WM_PATH}" ]]; then
+
+  # Перевірка на наявність WordPress та бекапів
+  [[ ! -f "${PWD}/wp-config.php" ]] && { echo "No WordPress installation found"; return 1; }
+  BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
+  [[ -z "${BACKUPS[*]}" ]] && { echo "No backups found"; return 1; }
+  php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
+
+  # Вибір бекапу
+  [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Choose backup number: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
+  echo "Selected backup: ${BACKUP_PATH}"
+
+  # Підтвердження та переміщення бекапу
+  read -rp "Proceed with restore? [y/n]: " CONFIRM
+  [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Cancelled"; return 1; }
+  AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
   mv "${BACKUP_PATH}" "${AI1WM_PATH}"
-fi
-  
-if [[ -d "${PWD}/wp-content/plugins/all-in-one-wp-migration" ]]; then
-  echo "Removing original all-in-one-wp-migration plugin"
-  run_wpcli plugin delete all-in-one-wp-migration
-fi
-  
-echo "Downloading forked all-in-one-wp-migration plugin"
-wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Failed to download ${AIOWPM_URL}"; exit 1; }
-  
-echo "Installing forked all-in-one-wp-migration plugin"
-unzip -q "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Failed to extract ${PWD}/wp-content/plugins/master.zip"; exit 1; }
-mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
-rm -f "${PWD}/wp-content/plugins/master.zip"
-  
-echo "Activating forked all-in-one-wp-migration plugin"
-mkdir -p "${PWD}/wp-content/ai1wm-backups"
-run_wpcli plugin activate all-in-one-wp-migration
-  
-echo "Atempting to restore backup ${BACKUP_PATH}"
-run_wpcli ai1wm restore "${BACKUP}"
-  
-echo "Updating all-in-one-wp-migration plugin"
-run_wpcli plugin update all-in-one-wp-migration
-  
-echo "Configuring .htaccess"
-echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
-run_wpcli rewrite flush --hard
 
+  # Завантаження плагіна, видалення старого, установка нового
+  run_wpcli plugin delete all-in-one-wp-migration 2>/dev/null
+  wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Failed to download plugin"; return 1; }
+  unzip -q "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Failed to unzip plugin"; return 1; }
+  mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
+  rm -f "${PWD}/wp-content/plugins/master.zip"
+  
+  # Активація плагіна та відновлення
+  run_wpcli plugin activate all-in-one-wp-migration
+  run_wpcli ai1wm restore "$(basename "${BACKUP_PATH}")"
+  
+  # Оновлення плагіна та налаштування .htaccess
+  run_wpcli plugin update all-in-one-wp-migration
+  echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
+  run_wpcli rewrite flush --hard
 }
-
 
 
 
