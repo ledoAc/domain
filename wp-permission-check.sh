@@ -255,13 +255,13 @@ backup_wordpress() {
     wp db export "$DB_BACKUP"
 
     if [ $? -eq 0 ]; then
-        echo "Дамп БД збережено у $DB_BACKUP"
+        echo "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP"
     else
         echo "Помилка експорту бази даних!"
         exit 1
     fi
 
-    echo "Архівування файлів WordPress..."
+    echo "${YELLOW}Архівування файлів WordPress...${RESET}"
 
     TOTAL_FILES=$(find "$SITE_PATH" -type f | wc -l)
     PROCESSED_FILES=0
@@ -284,13 +284,13 @@ backup_wordpress() {
     '
 
     if [ $? -eq 0 ]; then
-        echo "Бекап файлів збережено у $ZIP_BACKUP"
+        echo -e "${ORANGE} Бекап файлів збережено у $ZIP_BACKUP ${RESET}"
     else
         echo "Помилка архівування файлів!"
         exit 1
     fi
 
-    echo "Процес бекапу завершено!"
+    echo -e "${LIGHT_GREEN}Процес бекапу завершено!${RESET}"
 }
 
 
@@ -303,9 +303,9 @@ backup_wordpress() {
   php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
 
   [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Виберіть бекап: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
-  echo "Виберіть бекап: ${BACKUP_PATH}"
+  echo "${ORANGE}Виберіть бекап: ${BACKUP_PATH} ${RESET}"
 
-  read -rp "Відновити? [y/n]: " CONFIRM
+  read -rp "${ORANGE}Відновити? [y/n]: ${RESET}" CONFIRM
   [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Скасовано"; return 1; }
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
