@@ -70,7 +70,7 @@ user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list --fields=ID,user_login,user_email --format=table
 }
-url(){
+url_site(){
 home_url=$(wp option get home)
 siteurl=$(wp option get siteurl)
 
@@ -340,7 +340,7 @@ get_last_error_log
 check_permissions
 check_database_errors
 user_list
-url
+url_site
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
