@@ -61,6 +61,10 @@ check_permissions() {
         log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
+userlist(){
+echo "Список користувачів WordPress:"
+wp user list --fields=ID,user_login,user_email --format=table
+}
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
 
@@ -271,10 +275,7 @@ backup_wordpress() {
 }
 
 
-userlist(){
-echo "Список користувачів WordPress:"
-wp user list --fields=ID,user_login,user_email --format=table
-}
+
 
 get_last_error_log
 check_permissions
