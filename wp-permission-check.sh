@@ -256,7 +256,7 @@ backup_wordpress() {
     wp db export "$DB_BACKUP"
 
     if [ $? -eq 0 ]; then
-        echo -e "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP ${RESET}""
+        echo -e "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP ${RESET}"+-
     else
         echo "Помилка експорту бази даних!"
         exit 1
