@@ -281,35 +281,29 @@ backup_wordpress() {
 
  restore_wp_backup() {
 
-  # Перевірка на наявність WordPress та бекапів
   [[ ! -f "${PWD}/wp-config.php" ]] && { echo "No WordPress installation found"; return 1; }
   BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
   [[ -z "${BACKUPS[*]}" ]] && { echo "No backups found"; return 1; }
   php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
 
-  # Вибір бекапу
   [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Choose backup number: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
   echo "Selected backup: ${BACKUP_PATH}"
 
-  # Підтвердження та переміщення бекапу
   read -rp "Відновити? [y/n]: " CONFIRM
   [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Cancelled"; return 1; }
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
   mv "${BACKUP_PATH}" "${AI1WM_PATH}"
 
-  # Завантаження плагіна, видалення старого, установка нового
   run_wpcli plugin delete all-in-one-wp-migration 2>/dev/null
   wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Failed to download plugin"; return 1; }
-  unzip -q "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Failed to unzip plugin"; return 1; }
+  unzip -q -o "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Failed to unzip plugin"; return 1; }
   mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
   rm -f "${PWD}/wp-content/plugins/master.zip"
   
-  # Активація плагіна та відновлення
   run_wpcli plugin activate all-in-one-wp-migration
   run_wpcli ai1wm restore "$(basename "${BACKUP_PATH}")"
   
-  # Оновлення плагіна та налаштування .htaccess
   run_wpcli plugin update all-in-one-wp-migration
   echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
   run_wpcli rewrite flush --hard
