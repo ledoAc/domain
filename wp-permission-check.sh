@@ -255,13 +255,13 @@ backup_wordpress() {
     wp db export "$DB_BACKUP"
 
     if [ $? -eq 0 ]; then
-        echo "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP"
+        echo -e "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP"
     else
         echo "Помилка експорту бази даних!"
         exit 1
     fi
 
-    echo "${YELLOW}Архівування файлів WordPress...${RESET}"
+    echo -e "${YELLOW}Архівування файлів WordPress...${RESET}"
 
     TOTAL_FILES=$(find "$SITE_PATH" -type f | wc -l)
     PROCESSED_FILES=0
