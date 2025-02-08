@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 # Визначення шляху до сайту
-SITE_PATH="$(pwd)"
+
 get_last_error_log() {
     error_log_file="./error_log"
     if [ -f "$error_log_file" ]; then 
