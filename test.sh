@@ -1,5 +1,5 @@
 #!/bin/bash
-
+clear
 # Визначення шляху до сайту
 SITE_PATH="$(pwd)"
 
