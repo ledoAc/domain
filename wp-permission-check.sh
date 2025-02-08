@@ -21,7 +21,7 @@ if [ -f "$wp_path/wp-includes/version.php" ]; then
 else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
-
+echo
 check_permissions() {
     log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
@@ -61,7 +61,7 @@ check_permissions() {
         log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
     fi
 }
-
+echo
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
 
@@ -76,7 +76,7 @@ remove_htaccess_files() {
     echo -e "${RED}Файли .htaccess не знайдено.${RESET}"
   fi
 }
-
+echo
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
 
@@ -86,7 +86,7 @@ check_database_errors() {
         log_message "${RED}WP-CLI не знайдений. Перевірка бази даних неможлива.${RESET}"
     fi
 }
-
+echo
 echo -e "${ORANGE}Пошук файлів, які не належать Wordpress...${RESET}"
 
 cdfind=$(find . -type f \
@@ -102,7 +102,7 @@ cdfind=$(find . -type f \
     -not -name "readme.html")
 
 echo "$cdfind"
-
+echo
 echo -e "${ORANGE}Пошук файлів htaccess...${RESET}"
 
 cdhtaccess=$(find . -type f -name ".htaccess")
@@ -112,7 +112,10 @@ if [ -n "$cdhtaccess" ]; then
 else
   echo -e "${LIGHT_GREEN}Файли .htaccess не знайдено.${RESET}"
 fi
-
+echo
+userlist = $(wp user list)
+echo "$userlist"
+echo
 create_htaccess() {
   htaccess_path="./.htaccess"
   
@@ -232,6 +235,40 @@ disable_plugins_and_htaccess() {
     fi
 }
 
+backup_wordpress() {
+    SITE_PATH="$wp_path"  
+    BACKUP_PATH="$SITE_PATH/backups"   
+    DATE=$(date +"%Y-%m-%d_%H-%M-%S")
+    DB_BACKUP="$BACKUP_PATH/db_backup_$DATE.sql"
+    ZIP_BACKUP="$BACKUP_PATH/wp_backup_$DATE.zip"
+
+    mkdir -p "$BACKUP_PATH"
+
+    echo "Експорт бази даних..."
+    cd "$SITE_PATH"
+    wp db export "$DB_BACKUP"
+
+    if [ $? -eq 0 ]; then
+        echo "Дамп БД збережено у $DB_BACKUP"
+    else
+        echo "Помилка експорту бази даних!"
+        exit 1
+    fi
+
+    echo "Архівування файлів WordPress..."
+    zip -r "$ZIP_BACKUP" "$SITE_PATH"
+
+    if [ $? -eq 0 ]; then
+        echo "Бекап файлів збережено у $ZIP_BACKUP"
+    else
+        echo "Помилка архівування файлів!"
+        exit 1
+    fi
+
+    echo "Процес бекапу завершено!"
+}
+
+
 
 get_last_error_log
 check_permissions
@@ -247,7 +284,8 @@ echo "5. Відключити плагіни та .htaccess"
 echo "6. Замінити дефолтні файли WordPress"
 echo "7. Видалити .htaccess файли"
 echo "8. Створити .htaccess файл"
-echo "9. Вихід"
+echo "9. Створити бекап"
+echo "10. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -276,6 +314,9 @@ case $choice in
        create_htaccess
        ;;
     9) 
+        backup_wordpress
+        ;;
+     10) 
         exit 0
         ;;
     *)
