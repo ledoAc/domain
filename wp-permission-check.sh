@@ -68,10 +68,10 @@ wp user list --fields=ID,user_login,user_email --format=table
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
 
-  cdhtaccess=$(find . -type f -name ".htaccess")
+  htaccess_files=$(find . -type f -name ".htaccess")
 
-  if [ -n "$cdhtaccess" ]; then
-    for file in $cdhtaccess; do
+  if [ -n "$htaccess_files" ]; then
+    for file in $htaccess_files; do
       rm "$file"
       echo -e "${GREEN}Файл $file видалено.${RESET}"
     done
@@ -79,6 +79,7 @@ remove_htaccess_files() {
     echo -e "${RED}Файли .htaccess не знайдено.${RESET}"
   fi
 }
+
 check_database_errors() {
     log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
 
