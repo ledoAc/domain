@@ -317,7 +317,7 @@ echo "6. Замінити дефолтні файли WordPress"
 echo "7. Видалити .htaccess файли"
 echo "8. Створити .htaccess файл"
 echo "9. Створити бекап"
-echo "10. Відновити бека .wpess"
+echo "10. Відновити бекап .wpess"
 echo "11. Вихід"
 read -p "Введіть номер вибору: " choice
 
