@@ -70,6 +70,15 @@ user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list --fields=ID,user_login,user_email --format=table
 }
+url(){
+    echo -e "${ORANGE}Домени в базі даних${RESET}"
+
+home_url=$(wp option get home)
+siteurl=$(wp option get siteurl)
+
+echo "Home URL: $home_url"
+echo "Site URL: $siteurl"
+}
 
 remove_htaccess_files() {
   echo -e "${RED}Пошук та видалення файлів .htaccess...${RESET}"
@@ -303,9 +312,9 @@ backup_wordpress() {
   php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
 
   [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Виберіть бекап: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
-  echo "${ORANGE}Виберіть бекап: ${BACKUP_PATH} ${RESET}"
+  echo -e "${ORANGE}Виберіть бекап: ${BACKUP_PATH} ${RESET}"
 
-  read -rp "${ORANGE}Відновити? [y/n]: ${RESET}" CONFIRM
+  read -rp -e "${ORANGE}Відновити? [y/n]: ${RESET}" CONFIRM
   [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Скасовано"; return 1; }
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
@@ -331,6 +340,7 @@ get_last_error_log
 check_permissions
 check_database_errors
 user_list
+url()
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
