@@ -9,6 +9,7 @@ BLUE='\033[0;34m'
 RESET='\033[0m'
 ORANGE='\033[0;38;5;214m'
 LIGHT_GREEN='\033[1;32m'
+AIOWPM_URL="https://github.com/d0n601/All-In-One-WP-Migration-With-Import/archive/master.zip"
 
 log_message() {
     local message="$1"
@@ -296,7 +297,34 @@ import_latest_backup() {
         echo "Помилка при відновленні бекапу."
     fi
 }
+function restore_wp_backup {
+  [[ ! -f "${PWD}/wp-config.php" ]] && { echo "WordPress не знайдено"; return 1; }
+  BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
+  [[ -z "${BACKUPS[*]}" ]] && { echo "Бекап не знайдено"; return 1; }
+  php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Будь ласка використовуйте PHP 7.4 or 8.X"; return 1; }
 
+  [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Виберіть бекап: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
+  echo "Вибрано бекап: ${BACKUP_PATH}"
+
+  read -rp "Продовжити відновлення? [y/n]: " CONFIRM
+  [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Скасовано"; return 1; }
+  AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
+  mkdir -p "${AI1WM_PATH}"
+  mv "${BACKUP_PATH}" "${AI1WM_PATH}"
+
+  run_wpcli plugin delete all-in-one-wp-migration 2>/dev/null
+  wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Не вдалося завантажити плагін"; return 1; }
+  unzip -q "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Не вдалося розпакувати плагін"; return 1; }
+  mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
+  rm -f "${PWD}/wp-content/plugins/master.zip"
+  
+  run_wpcli plugin activate all-in-one-wp-migration
+  run_wpcli ai1wm restore "$(basename "${BACKUP_PATH}")"
+  
+  run_wpcli plugin update all-in-one-wp-migration
+  echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
+  run_wpcli rewrite flush --hard
+}
 
 
 
@@ -349,10 +377,10 @@ case $choice in
     9) 
         backup_wordpress
         ;;
-    11) 
-        import_latest_backup
-        ;;
     10) 
+        restore_wp_backup
+        ;;
+    11) 
         exit 0
         ;;
     *)
