@@ -288,7 +288,7 @@ backup_wordpress() {
   echo "Selected backup: ${BACKUP_PATH}"
 
   # Підтвердження та переміщення бекапу
-  read -rp "Proceed with restore? [y/n]: " CONFIRM
+  read -rp "Відновити? [y/n]: " CONFIRM
   [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Cancelled"; return 1; }
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
