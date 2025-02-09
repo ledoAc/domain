@@ -431,16 +431,13 @@ echo "Ім'я бази даних: $DB_NAME"
 echo "Користувач бази даних: $DB_USER"
 echo "Хост бази даних: $DB_HOST"
 
-# Підключення до бази даних і отримуємо інформацію про користувача та префікс таблиць
-echo ""
-echo "Значення з бази даних:"
-
 # Перевіряємо з'єднання з базою
-mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST -e "SHOW DATABASES LIKE '$DB_NAME';" &>/dev/null
+mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST -e "USE $DB_NAME;" &>/dev/null
 
 if [ $? -eq 0 ]; then
-    # Виводимо префікс таблиць з бази
-    echo "Префікс таблиць у базі даних (за замовчуванням):"
+    # Якщо з'єднання успішне, виводимо таблиці з префіксом
+    echo ""
+    echo "Таблиці в базі даних з префіксом '$wp_prefix':"
     mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST $DB_NAME -e "SHOW TABLES LIKE '${wp_prefix}%';"
 else
     echo "Не вдалося підключитися до бази даних!"
