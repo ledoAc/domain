@@ -412,7 +412,7 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_config(){
-
+echo -e "${ORANGE}Перевірка файлу конфігурацій на рули...${RESET}"
 wp_config_file="wp-config.php"
 
 if [ ! -f "$wp_config_file" ]; then
@@ -431,13 +431,6 @@ settings=(
     ["EMPTY_TRASH_DAYS"]="Відключення автоматичного очищення кошика"
     ["WP_POST_REVISIONS"]="Вимкнення збереження версій публікацій"
     ["REST_API_ENABLED"]="Вимкнення REST API для підвищення безпеки"
-    ["WP_MAX_MEMORY_LIMIT"]="Максимальний ліміт пам'яті для адміністраторів"
-    ["DB_NAME"]="Назва бази даних"
-    ["DB_USER"]="Ім'я користувача для бази даних"
-    ["DB_PASSWORD"]="Пароль користувача бази даних"
-    ["DB_HOST"]="Хост бази даних"
-    ["DB_CHARSET"]="Налаштування кодування бази даних"
-    ["DB_COLLATE"]="Налаштування колації бази даних"
     ["WP_SITEURL"]="URL сайту (Site URL)"
     ["WP_HOME"]="URL домашньої сторінки"
     ["WP_CACHE"]="Увімкнення кешування"
@@ -449,8 +442,6 @@ settings=(
     ["WP_DEFAULT_THEME"]="Тема за замовчуванням"
     ["COOKIE_DOMAIN"]="Домен для cookie"
     ["COOKIEPATH"]="Шлях до cookie"
-    ["WP_HOME"]="Головна сторінка сайту"
-    ["WP_SITEURL"]="URL сайту"
     ["WP_CONTENT_DIR"]="Шлях до каталогу контенту"
     ["WP_CONTENT_URL"]="URL каталогу контенту"
     ["WP_PLUGIN_DIR"]="Шлях до каталогу плагінів"
@@ -464,11 +455,14 @@ function check_wp_config_setting {
     description=$2
     setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
 
-    if [ ! -z "$setting_value" ]; then
-        echo -e "Налаштування: $setting_name"
-        echo -e "Значення: ${ORANGE}$setting_value${NC}"
-        echo -e "Опис: ${ORANGE}$description${NC}"
-        echo ""
+    if [[ "$setting_name" != "DB_HOST" && "$setting_name" != "DB_NAME" && "$setting_name" != "DB_USER" && "$setting_name" != "DB_PASSWORD" && "$setting_name" != "DB_CHARSET" ]]; then
+        if [ ! -z "$setting_value" ]; then
+        
+            echo -e "${ORANGE}Налаштування:${RESET} $setting_name"
+            echo -e "${ORANGE}Значення:${RESET} $setting_value"
+            echo -e "${ORANGE}Опис:${RESET} $description"
+            echo ""
+        fi
     fi
 }
 
@@ -487,7 +481,7 @@ url_site
 error_config
 
 
-echo -e "${YELLOW}Обери дію:${RESET}"
+echo -e "${ORANGE}Обери дію:${RESET}"
 echo "1. Змінити пароль адміністратора"
 echo "2. Додати нового адміністратора"
 echo "3. Оновити роль користувача"
