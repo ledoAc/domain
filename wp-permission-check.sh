@@ -413,7 +413,7 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 error_config(){
 
-
+echo "hello"
 
 }
 
