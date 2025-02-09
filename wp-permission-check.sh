@@ -412,18 +412,14 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_config(){
-#!/bin/bash
 
-# Шлях до wp-config.php
 wp_config_file="wp-config.php"
 
-# Перевірка, чи існує файл wp-config.php
 if [ ! -f "$wp_config_file" ]; then
     echo "Файл wp-config.php не знайдено!"
     exit 1
 fi
 
-# Список налаштувань, які будемо перевіряти
 declare -A settings
 settings=(
     ["DISABLE_WP_CRON"]="Відключення WP Cron (автоматичне виконання задач у WordPress)"
@@ -436,23 +432,46 @@ settings=(
     ["WP_POST_REVISIONS"]="Вимкнення збереження версій публікацій"
     ["REST_API_ENABLED"]="Вимкнення REST API для підвищення безпеки"
     ["WP_MAX_MEMORY_LIMIT"]="Максимальний ліміт пам'яті для адміністраторів"
+    ["DB_NAME"]="Назва бази даних"
+    ["DB_USER"]="Ім'я користувача для бази даних"
+    ["DB_PASSWORD"]="Пароль користувача бази даних"
+    ["DB_HOST"]="Хост бази даних"
+    ["DB_CHARSET"]="Налаштування кодування бази даних"
+    ["DB_COLLATE"]="Налаштування колації бази даних"
+    ["WP_SITEURL"]="URL сайту (Site URL)"
+    ["WP_HOME"]="URL домашньої сторінки"
+    ["WP_CACHE"]="Увімкнення кешування"
+    ["WP_ALLOW_REPAIR"]="Дозволяє ремонтувати базу даних через URL"
+    ["WP_DEBUG_DISPLAY"]="Виведення помилок на екран"
+    ["FORCE_SSL_ADMIN"]="Примусовий SSL для адмінки"
+    ["DISALLOW_UNFILTERED_HTML"]="Заборона вставляти небезпечний HTML"
+    ["WPLANG"]="Мова WordPress"
+    ["WP_DEFAULT_THEME"]="Тема за замовчуванням"
+    ["COOKIE_DOMAIN"]="Домен для cookie"
+    ["COOKIEPATH"]="Шлях до cookie"
+    ["WP_HOME"]="Головна сторінка сайту"
+    ["WP_SITEURL"]="URL сайту"
+    ["WP_CONTENT_DIR"]="Шлях до каталогу контенту"
+    ["WP_CONTENT_URL"]="URL каталогу контенту"
+    ["WP_PLUGIN_DIR"]="Шлях до каталогу плагінів"
+    ["WP_PLUGIN_URL"]="URL каталогу плагінів"
+    ["WP_TEMP_DIR"]="Шлях до тимчасового каталогу"
+    ["WP_MEMORY_LIMIT"]="Ліміт пам'яті для PHP"
 )
 
-# Функція для виведення значення і пояснення, якщо налаштування знайдено
 function check_wp_config_setting {
     setting_name=$1
     description=$2
     setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
 
     if [ ! -z "$setting_value" ]; then
-        echo "Налаштування: $setting_name"
-        echo "Значення: $setting_value"
-        echo "Опис: $description"
+        echo -e "Налаштування: $setting_name"
+        echo -e "Значення: ${ORANGE}$setting_value${NC}"
+        echo -e "Опис: ${ORANGE}$description${NC}"
         echo ""
     fi
 }
 
-# Перевірка важливих налаштувань у wp-config.php
 for setting in "${!settings[@]}"; do
     check_wp_config_setting "$setting" "${settings[$setting]}"
 done
@@ -465,6 +484,7 @@ check_permissions
 check_database_errors
 user_list
 url_site
+error_config
 
 
 echo -e "${YELLOW}Обери дію:${RESET}"
@@ -481,8 +501,7 @@ echo "10. Відновити бекап .wpess"
 echo "11. Відключити потрібний плагін"
 echo "12. Змінити тему сайту"
 echo "13. Замінити лінки в базі даних"
-echo "14. Провірка wp-config.php файлу на рули"
-echo "15. Вихід"
+echo "14. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -525,10 +544,7 @@ case $choice in
     13)
         replace_url
         ;;
-    14)
-        error_config
-        ;;
-    15)
+     14)
         exit 0
         ;;
     *)
