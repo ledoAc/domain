@@ -464,7 +464,7 @@ function check_wp_config_setting {
             echo ""
             else
             echo -e "Налаштування: $setting_name не знайдено"
-            echo "
+            echo ""
         fi
     fi
 }
