@@ -414,23 +414,37 @@ echo "Заміна '$search' на '$replace' завершена!"
 error_database(){
 #!/bin/bash
 
-# Читання параметрів з файлу wp-config.php
+# Шлях до wp-config.php
 wp_config_file="wp-config.php"
 
-# Отримуємо префікс таблиць з wp-config.php
-wp_prefix=$(grep -oP "\$table_prefix\s*=\s*'\K\w+" $wp_config_file)
+# Отримуємо параметри з wp-config.php
+wp_prefix=$(grep -oP "\$table_prefix\s*=\s*'\K\w+" "$wp_config_file")
+DB_NAME=$(grep -oP "define\(\s*'DB_NAME',\s*'\K[^\']+" "$wp_config_file")
+DB_USER=$(grep -oP "define\(\s*'DB_USER',\s*'\K[^\']+" "$wp_config_file")
+DB_PASSWORD=$(grep -oP "define\(\s*'DB_PASSWORD',\s*'\K[^\']+" "$wp_config_file")
+DB_HOST=$(grep -oP "define\(\s*'DB_HOST',\s*'\K[^\']+" "$wp_config_file")
 
-# Параметри для підключення до бази даних
-DB_NAME=$(grep -oP "define\(\s*'DB_NAME',\s*'\K[^\']+" $wp_config_file)
-DB_USER=$(grep -oP "define\(\s*'DB_USER',\s*'\K[^\']+" $wp_config_file)
-DB_PASSWORD=$(grep -oP "define\(\s*'DB_PASSWORD',\s*'\K[^\']+" $wp_config_file)
-DB_HOST=$(grep -oP "define\(\s*'DB_HOST',\s*'\K[^\']+" $wp_config_file)
+# Виводимо значення з wp-config.php
+echo "Значення з wp-config.php:"
+echo "Префікс таблиць: $wp_prefix"
+echo "Ім'я бази даних: $DB_NAME"
+echo "Користувач бази даних: $DB_USER"
+echo "Хост бази даних: $DB_HOST"
 
-# Підключення до бази даних
-mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST $DB_NAME -e "SHOW TABLES LIKE '${wp_prefix}%'"
+# Підключення до бази даних і отримуємо інформацію про користувача та префікс таблиць
+echo ""
+echo "Значення з бази даних:"
 
-# Виведення префікса з wp-config.php
-echo "Префікс таблиць з wp-config.php: $wp_prefix"
+# Перевіряємо з'єднання з базою
+mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST -e "SHOW DATABASES LIKE '$DB_NAME';" &>/dev/null
+
+if [ $? -eq 0 ]; then
+    # Виводимо префікс таблиць з бази
+    echo "Префікс таблиць у базі даних (за замовчуванням):"
+    mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST $DB_NAME -e "SHOW TABLES LIKE '${wp_prefix}%';"
+else
+    echo "Не вдалося підключитися до бази даних!"
+fi
 
 
 }
