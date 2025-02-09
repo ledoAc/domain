@@ -337,7 +337,7 @@ backup_wordpress() {
 
 plugin_deactivate(){
 
-plugins=$(wp plugin list --format=csv --fields=name)
+plugins=$(wp plugin list)
 
 # Перетворюємо на масив та виводимо з номерами
 i=1
