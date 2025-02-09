@@ -1,4 +1,5 @@
 #!/bin/bash
 clear
-read "Введіть першу лінку: " url1
+echo "Введіть першу лінку: "
+read url1
 echo "$url1"
