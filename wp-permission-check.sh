@@ -413,6 +413,9 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 error_config(){
 
+#!/bin/bash
+
+# Шлях до wp-config.php
 wp_config_file="wp-config.php"
 
 # Перевірка, чи існує файл wp-config.php
@@ -436,7 +439,7 @@ settings=(
     ["WP_MAX_MEMORY_LIMIT"]="Максимальний ліміт пам'яті для адміністраторів"
 )
 
-# Функція для виведення значення і пояснення
+# Функція для виведення значення і пояснення, якщо налаштування знайдено
 function check_wp_config_setting {
     setting_name=$1
     description=$2
@@ -447,9 +450,6 @@ function check_wp_config_setting {
         echo "Значення: $setting_value"
         echo "Опис: $description"
         echo ""
-    else
-        echo "Налаштування: $setting_name - не знайдено в файлі wp-config.php"
-        echo ""
     fi
 }
 
@@ -459,11 +459,8 @@ for setting in "${!settings[@]}"; do
 done
 
 # Тепер виведемо інші налаштування, яких немає в списку
-echo "Інші налаштування, яких немає в попередньому списку:"
-echo ""
-
-# Шукаємо всі define в wp-config.php і перевіряємо, чи є вони у списку
 grep -oP "define\(\s*'\K[^\']+" "$wp_config_file" | while read -r setting_name; do
+    # Перевіряємо, чи це не налаштування з нашого списку
     if [[ -z "${settings[$setting_name]}" ]]; then
         setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
         echo "Налаштування: $setting_name"
@@ -472,6 +469,7 @@ grep -oP "define\(\s*'\K[^\']+" "$wp_config_file" | while read -r setting_name; 
         echo ""
     fi
 done
+
 
 }
 
@@ -496,7 +494,7 @@ echo "10. Відновити бекап .wpess"
 echo "11. Відключити потрібний плагін"
 echo "12. Змінити тему сайту"
 echo "13. Замінити лінки в базі даних"
-echo "14. Error Establishing A Database Connection"
+echo "14. Провірка wp-config.php файлу на рули"
 echo "15. Вихід"
 read -p "Введіть номер вибору: " choice
 
