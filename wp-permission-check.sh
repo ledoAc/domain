@@ -412,9 +412,6 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_database(){
-#!/bin/bash
-
-# 1. Отримуємо значення з wp-config.php
 DB_NAME=$(grep "DB_NAME" wp-config.php | cut -d "'" -f 4)
 DB_USER=$(grep "DB_USER" wp-config.php | cut -d "'" -f 4)
 DB_PREFIX=$(grep "table_prefix" wp-config.php | cut -d "'" -f 2)
@@ -423,31 +420,32 @@ DB_PREFIX=$(grep "table_prefix" wp-config.php | cut -d "'" -f 2)
 REAL_DB_NAME=$(wp config get DB_NAME)
 REAL_DB_USER=$(wp config get DB_USER)
 
-# 3. Отримуємо першу таблицю, що починається з префікса
-REAL_DB_PREFIX=$(wp db query "SHOW TABLES LIKE '${DB_PREFIX}%'" --silent --skip-column-names | head -n 1)
+# 3. Отримуємо список таблиць, що починаються з префікса
+TABLE_LIST=$(wp db query "SHOW TABLES LIKE '${DB_PREFIX}%'" --silent --skip-column-names)
 
-# 4. Витягуємо лише префікс (без суфікса)
-REAL_DB_PREFIX=$(echo "$REAL_DB_PREFIX" | grep -oE "^[^_]+_")
+# 4. Виводимо всі таблиці з вказаним префіксом
+echo "Таблиці з префіксом '$DB_PREFIX':"
+if [ -z "$TABLE_LIST" ]; then
+    echo "❌ Не знайдено таблиць з префіксом '$DB_PREFIX'"
+else
+    echo "$TABLE_LIST"
+fi
 
-# 5. Виводимо результати перевірки
+# 5. Перевіряємо, чи префікс вказаний правильно
+REAL_DB_PREFIX=$(echo "$TABLE_LIST" | head -n 1 | grep -oE "^[^_]+_")
+
+# 6. Виводимо результати перевірки
 echo "📌 Перевірка налаштувань бази даних:"
-if [[ "$DB_NAME" == "$REAL_DB_NAME" ]]; then
-    echo "✅ Назва бази даних збігається"
-else
-    echo "❌ Різні назви БД: '$DB_NAME' ≠ '$REAL_DB_NAME'"
-fi
+[[ "$DB_NAME" == "$REAL_DB_NAME" ]] && echo "✅ Назва бази даних збігається" || echo "❌ Різні назви БД: $DB_NAME ≠ $REAL_DB_NAME"
+[[ "$DB_USER" == "$REAL_DB_USER" ]] && echo "✅ Користувач БД збігається" || echo "❌ Різні користувачі БД: $DB_USER ≠ $REAL_DB_USER"
 
-if [[ "$DB_USER" == "$REAL_DB_USER" ]]; then
-    echo "✅ Користувач БД збігається"
-else
-    echo "❌ Різні користувачі БД: '$DB_USER' ≠ '$REAL_DB_USER'"
-fi
-
+# Перевірка префіксу
 if [[ "$DB_PREFIX" == "$REAL_DB_PREFIX" ]]; then
     echo "✅ Префікс таблиць збігається"
 else
     echo "❌ Різні префікси: '$DB_PREFIX' ≠ '$REAL_DB_PREFIX'"
 fi
+
 
 }
 
