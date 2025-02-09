@@ -364,6 +364,37 @@ if [ -n "$plugin_name" ]; then
 else
     echo "Невірний номер плагіна."
 fi
+}
+
+theme_activation(){
+
+themes=$(wp theme list --status=inactive --format=csv --fields=name | tail -n +2)
+
+if [ -z "$themes" ]; then
+    echo "Немає доступних тем для активації."
+    exit 1
+fi
+
+i=1
+declare -A theme_map
+echo "Оберіть тему для активації:"
+IFS=$'\n'
+for theme in $themes; do
+    theme_map[$i]="$theme"
+    echo "$i. $theme"
+    ((i++))
+done
+
+read -p "Введіть номер теми: " theme_number
+
+theme_name="${theme_map[$theme_number]}"
+
+if [ -n "$theme_name" ]; then
+    wp theme activate "$theme_name"
+    echo "Тема '$theme_name' була активована."
+else
+    echo "Невірний номер теми."
+fi
 
 }
 
@@ -387,7 +418,8 @@ echo "8. Створити .htaccess файл"
 echo "9. Створити бекап"
 echo "10. Відновити бекап .wpess"
 echo "11. Відключити потрібний плагін"
-echo "12. Вихід"
+echo "12. Змінити тему сайту"
+echo "13. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -425,6 +457,9 @@ case $choice in
         plugin_deactivate
         ;;
     12)
+        theme_activation
+        ;;
+    13)
         exit 0
         ;;
     *)
