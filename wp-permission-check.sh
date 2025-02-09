@@ -413,11 +413,6 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 error_config(){
 
-}
-
-for setting in "${!settings[@]}"; do
-    check_wp_config_setting "$setting" "${settings[$setting]}"
-done
 
 
 }
