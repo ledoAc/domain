@@ -412,17 +412,24 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_database(){
+#!/bin/bash
 
+# 1. Отримуємо значення з wp-config.php
 DB_NAME=$(grep "DB_NAME" wp-config.php | cut -d "'" -f 4)
 DB_USER=$(grep "DB_USER" wp-config.php | cut -d "'" -f 4)
 DB_PREFIX=$(grep "table_prefix" wp-config.php | cut -d "'" -f 2)
 
+# 2. Отримуємо реальні значення через WP-CLI
 REAL_DB_NAME=$(wp config get DB_NAME)
 REAL_DB_USER=$(wp config get DB_USER)
+
+# 3. Отримуємо першу таблицю, що починається з префікса
 REAL_DB_PREFIX=$(wp db query "SHOW TABLES LIKE '${DB_PREFIX}%'" --silent --skip-column-names | head -n 1)
 
-REAL_DB_PREFIX=$(echo "$REAL_DB_PREFIX" | sed -E "s/(_.*)//")
+# 4. Витягуємо лише префікс (без суфікса)
+REAL_DB_PREFIX=$(echo "$REAL_DB_PREFIX" | grep -oE "^[^_]+_")
 
+# 5. Виводимо результати перевірки
 echo "📌 Перевірка налаштувань бази даних:"
 [[ "$DB_NAME" == "$REAL_DB_NAME" ]] && echo "✅ Назва бази даних збігається" || echo "❌ Різні назви БД: $DB_NAME ≠ $REAL_DB_NAME"
 [[ "$DB_USER" == "$REAL_DB_USER" ]] && echo "✅ Користувач БД збігається" || echo "❌ Різні користувачі БД: $DB_USER ≠ $REAL_DB_USER"
