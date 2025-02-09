@@ -70,7 +70,7 @@ check_permissions() {
 }
 user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
-    wp user list --fields=ID,user_login,user_email --format=table
+    wp user list
 }
 url_site(){
 home_url=$(wp option get home)
@@ -411,6 +411,25 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 }
 
+error_database(){
+
+DB_NAME=$(grep "DB_NAME" wp-config.php | cut -d "'" -f 4)
+DB_USER=$(grep "DB_USER" wp-config.php | cut -d "'" -f 4)
+DB_PREFIX=$(grep "table_prefix" wp-config.php | cut -d "'" -f 2)
+
+REAL_DB_NAME=$(wp config get DB_NAME)
+REAL_DB_USER=$(wp config get DB_USER)
+REAL_DB_PREFIX=$(wp db query "SHOW TABLES LIKE '${DB_PREFIX}%'" --silent --skip-column-names | head -n 1)
+
+REAL_DB_PREFIX=$(echo "$REAL_DB_PREFIX" | sed -E "s/(_.*)//")
+
+echo "📌 Перевірка налаштувань бази даних:"
+[[ "$DB_NAME" == "$REAL_DB_NAME" ]] && echo "✅ Назва бази даних збігається" || echo "❌ Різні назви БД: $DB_NAME ≠ $REAL_DB_NAME"
+[[ "$DB_USER" == "$REAL_DB_USER" ]] && echo "✅ Користувач БД збігається" || echo "❌ Різні користувачі БД: $DB_USER ≠ $REAL_DB_USER"
+[[ "$DB_PREFIX" == "$REAL_DB_PREFIX" ]] && echo "✅ Префікс таблиць збігається" || echo "❌ Різні префікси: '$DB_PREFIX' ≠ '$REAL_DB_PREFIX'"
+
+}
+
 get_last_error_log
 check_permissions
 check_database_errors
@@ -432,7 +451,8 @@ echo "10. Відновити бекап .wpess"
 echo "11. Відключити потрібний плагін"
 echo "12. Змінити тему сайту"
 echo "13. Замінити лінки в базі даних"
-echo "14. Вихід"
+echo "14. Error Establishing A Database Connection"
+echo "15. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -476,6 +496,9 @@ case $choice in
         replace_url
         ;;
     14)
+        error_database
+        ;;
+    15)
         exit 0
         ;;
     *)
