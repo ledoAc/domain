@@ -412,39 +412,25 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_database(){
-DB_NAME=$(grep "DB_NAME" wp-config.php | cut -d "'" -f 4)
-DB_USER=$(grep "DB_USER" wp-config.php | cut -d "'" -f 4)
-DB_PREFIX=$(grep "table_prefix" wp-config.php | cut -d "'" -f 2)
+#!/bin/bash
 
-# 2. Отримуємо реальні значення через WP-CLI
-REAL_DB_NAME=$(wp config get DB_NAME)
-REAL_DB_USER=$(wp config get DB_USER)
+# Читання параметрів з файлу wp-config.php
+wp_config_file="wp-config.php"
 
-# 3. Отримуємо список таблиць, що починаються з префікса
-TABLE_LIST=$(wp db query "SHOW TABLES LIKE '${DB_PREFIX}%'" --silent --skip-column-names)
+# Отримуємо префікс таблиць з wp-config.php
+wp_prefix=$(grep -oP "\$table_prefix\s*=\s*'\K\w+" $wp_config_file)
 
-# 4. Виводимо всі таблиці з вказаним префіксом
-echo "Таблиці з префіксом '$DB_PREFIX':"
-if [ -z "$TABLE_LIST" ]; then
-    echo "❌ Не знайдено таблиць з префіксом '$DB_PREFIX'"
-else
-    echo "$TABLE_LIST"
-fi
+# Параметри для підключення до бази даних
+DB_NAME=$(grep -oP "define\(\s*'DB_NAME',\s*'\K[^\']+" $wp_config_file)
+DB_USER=$(grep -oP "define\(\s*'DB_USER',\s*'\K[^\']+" $wp_config_file)
+DB_PASSWORD=$(grep -oP "define\(\s*'DB_PASSWORD',\s*'\K[^\']+" $wp_config_file)
+DB_HOST=$(grep -oP "define\(\s*'DB_HOST',\s*'\K[^\']+" $wp_config_file)
 
-# 5. Перевіряємо, чи префікс вказаний правильно
-REAL_DB_PREFIX=$(echo "$TABLE_LIST" | head -n 1 | grep -oE "^[^_]+_")
+# Підключення до бази даних
+mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST $DB_NAME -e "SHOW TABLES LIKE '${wp_prefix}%'"
 
-# 6. Виводимо результати перевірки
-echo "📌 Перевірка налаштувань бази даних:"
-[[ "$DB_NAME" == "$REAL_DB_NAME" ]] && echo "✅ Назва бази даних збігається" || echo "❌ Різні назви БД: $DB_NAME ≠ $REAL_DB_NAME"
-[[ "$DB_USER" == "$REAL_DB_USER" ]] && echo "✅ Користувач БД збігається" || echo "❌ Різні користувачі БД: $DB_USER ≠ $REAL_DB_USER"
-
-# Перевірка префіксу
-if [[ "$DB_PREFIX" == "$REAL_DB_PREFIX" ]]; then
-    echo "✅ Префікс таблиць збігається"
-else
-    echo "❌ Різні префікси: '$DB_PREFIX' ≠ '$REAL_DB_PREFIX'"
-fi
+# Виведення префікса з wp-config.php
+echo "Префікс таблиць з wp-config.php: $wp_prefix"
 
 
 }
