@@ -400,6 +400,16 @@ fi
 
 }
 
+replace_url(){
+
+read -p "Введіть слово для пошуку: " search
+read -p "Введіть слово для заміни: " replace
+
+wp search-replace "$search" "$replace" --all-tables
+
+echo "Заміна '$search' на '$replace' завершена!"
+
+}
 
 get_last_error_log
 check_permissions
@@ -421,7 +431,8 @@ echo "9. Створити бекап"
 echo "10. Відновити бекап .wpess"
 echo "11. Відключити потрібний плагін"
 echo "12. Змінити тему сайту"
-echo "13. Вихід"
+echo "13. Замінити лінки в базі даних"
+echo "14. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -462,6 +473,9 @@ case $choice in
         theme_activation
         ;;
     13)
+        replace_url
+        ;;
+    14)
         exit 0
         ;;
     *)
