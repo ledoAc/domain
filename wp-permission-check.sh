@@ -458,9 +458,9 @@ function check_wp_config_setting {
     if [[ "$setting_name" != "DB_HOST" && "$setting_name" != "DB_NAME" && "$setting_name" != "DB_USER" && "$setting_name" != "DB_PASSWORD" && "$setting_name" != "DB_CHARSET" ]]; then
         if [ ! -z "$setting_value" ]; then
         
-            echo -e "${ORANGE}Налаштування:${RESET} $setting_name"
-            echo -e "${ORANGE}Значення:${RESET} $setting_value"
-            echo -e "${ORANGE}Опис:${RESET} $description"
+            echo -e "${LIGHT_GREEN}Налаштування:${RESET} $setting_name"
+            echo -e "${LIGHT_GREEN}Значення:${RESET} $setting_value"
+            echo -e "${LIGHT_GREEN}Опис:${RESET} $description"
             echo ""
         fi
     fi
