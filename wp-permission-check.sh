@@ -412,7 +412,6 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_config(){
-
 #!/bin/bash
 
 # Шлях до wp-config.php
@@ -456,18 +455,6 @@ function check_wp_config_setting {
 # Перевірка важливих налаштувань у wp-config.php
 for setting in "${!settings[@]}"; do
     check_wp_config_setting "$setting" "${settings[$setting]}"
-done
-
-# Тепер виведемо інші налаштування, яких немає в списку
-grep -oP "define\(\s*'\K[^\']+" "$wp_config_file" | while read -r setting_name; do
-    # Перевіряємо, чи це не налаштування з нашого списку
-    if [[ -z "${settings[$setting_name]}" ]]; then
-        setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
-        echo "Налаштування: $setting_name"
-        echo "Значення: $setting_value"
-        echo "Опис: Не вказано в списку"
-        echo ""
-    fi
 done
 
 
