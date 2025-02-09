@@ -402,8 +402,8 @@ fi
 
 replace_url(){
 
-read -p "Введіть слово для пошуку: " search
-read -p "Введіть слово для заміни: " replace
+read -p "Домен який треба замінити: " search
+read -p "Домен на який замінити: " replace
 
 wp search-replace "$search" "$replace" --all-tables
 
