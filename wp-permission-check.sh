@@ -413,13 +413,18 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 error_config(){
 
+LIGHT_GREEN="\033[1;32m"
+ORANGE="\033[1;33m"
+RESET="\033[0m"
+
+echo -e "${LIGHT_GREEN}Перевірка wp-config.php на налаштування...${RESET}"
+
 wp_config_file="wp-config.php"
 
 if [ ! -f "$wp_config_file" ]; then
     echo "Файл wp-config.php не знайдено!"
     exit 1
 fi
-
 
 declare -A settings
 settings=(
@@ -451,24 +456,30 @@ settings=(
     ["WP_MEMORY_LIMIT"]="Ліміт пам'яті для PHP"
 )
 
+exclude_settings=("ABSPATH" "NONCE_SALT" "LOGGED_IN_SALT" "SECURE_AUTH_SALT" "AUTH_SALT" "NONCE_KEY" "LOGGED_IN_KEY" "SECURE_AUTH_KEY" "AUTH_KEY" "DB_COLLATE" "DB_CHARSET" "DB_HOST" "DB_PASSWORD" "DB_USER" "DB_NAME")
+
 function check_wp_config_setting {
     setting_name=$1
     description=$2
-    setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
+    setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^']+" "$wp_config_file")
 
-    if [[ "$setting_name" != "DB_HOST" && "$setting_name" != "DB_NAME" && "$setting_name" != "DB_USER" && "$setting_name" != "DB_PASSWORD" && "$setting_name" != "DB_CHARSET" ]]; then
-        if [ ! -z "$setting_value" ]; then
-            echo -e "Налаштування: $setting_name"
-            echo -e "Значення: ${ORANGE}$setting_value${NC}"
-            echo -e "Опис: ${ORANGE}$description${NC}"
-            echo ""
-        fi
+    if [[ " ${exclude_settings[@]} " =~ " $setting_name " ]]; then
+        return 0
+    fi
+
+    if [ ! -z "$setting_value" ]; then
+        echo -e "${ORANGE}Налаштування:${RESET} $setting_name"
+        echo -e "${ORANGE}Значення:${RESET} $setting_value"
+        echo -e "${ORANGE}Опис:${RESET} $description"
+        echo ""
+        
     fi
 }
 
 for setting in "${!settings[@]}"; do
     check_wp_config_setting "$setting" "${settings[$setting]}"
 done
+
 
 
 }
