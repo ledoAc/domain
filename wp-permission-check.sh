@@ -462,9 +462,7 @@ function check_wp_config_setting {
             echo -e "${LIGHT_GREEN}Значення:${RESET} $setting_value"
             echo -e "${LIGHT_GREEN}Опис:${RESET} $description"
             echo ""
-            else
-            echo -e "Налаштування: $setting_name не знайдено"
-            echo ""
+           
         fi
     fi
 }
