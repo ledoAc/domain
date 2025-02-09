@@ -411,38 +411,67 @@ echo "Заміна '$search' на '$replace' завершена!"
 
 }
 
-error_database(){
-#!/bin/bash
+error_config(){
 
-# Шлях до wp-config.php
 wp_config_file="wp-config.php"
 
-# Отримуємо параметри з wp-config.php
-wp_prefix=$(grep -oP "\$table_prefix\s*=\s*'\K\w+" "$wp_config_file")
-DB_NAME=$(grep -oP "define\(\s*'DB_NAME',\s*'\K[^\']+" "$wp_config_file")
-DB_USER=$(grep -oP "define\(\s*'DB_USER',\s*'\K[^\']+" "$wp_config_file")
-DB_PASSWORD=$(grep -oP "define\(\s*'DB_PASSWORD',\s*'\K[^\']+" "$wp_config_file")
-DB_HOST=$(grep -oP "define\(\s*'DB_HOST',\s*'\K[^\']+" "$wp_config_file")
-
-# Виводимо значення з wp-config.php
-echo "Значення з wp-config.php:"
-echo "Префікс таблиць: $wp_prefix"
-echo "Ім'я бази даних: $DB_NAME"
-echo "Користувач бази даних: $DB_USER"
-echo "Хост бази даних: $DB_HOST"
-
-# Перевіряємо з'єднання з базою
-mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST -e "USE $DB_NAME;" &>/dev/null
-
-if [ $? -eq 0 ]; then
-    # Якщо з'єднання успішне, виводимо таблиці з префіксом
-    echo ""
-    echo "Таблиці в базі даних з префіксом '$wp_prefix':"
-    mysql -u$DB_USER -p$DB_PASSWORD -h$DB_HOST $DB_NAME -e "SHOW TABLES LIKE '${wp_prefix}%';"
-else
-    echo "Не вдалося підключитися до бази даних!"
+# Перевірка, чи існує файл wp-config.php
+if [ ! -f "$wp_config_file" ]; then
+    echo "Файл wp-config.php не знайдено!"
+    exit 1
 fi
 
+# Список налаштувань, які будемо перевіряти
+declare -A settings
+settings=(
+    ["DISABLE_WP_CRON"]="Відключення WP Cron (автоматичне виконання задач у WordPress)"
+    ["WP_MEMORY_LIMIT"]="Зміна ліміту пам'яті для WordPress"
+    ["WP_DEBUG"]="Включення режиму налагодження"
+    ["WP_DEBUG_LOG"]="Логування помилок у файл wp-content/debug.log"
+    ["DISALLOW_FILE_EDIT"]="Відключення редактора файлів тем і плагінів через адмінку"
+    ["AUTOMATIC_UPDATER_DISABLED"]="Вимкнення автоматичних оновлень"
+    ["EMPTY_TRASH_DAYS"]="Відключення автоматичного очищення кошика"
+    ["WP_POST_REVISIONS"]="Вимкнення збереження версій публікацій"
+    ["REST_API_ENABLED"]="Вимкнення REST API для підвищення безпеки"
+    ["WP_MAX_MEMORY_LIMIT"]="Максимальний ліміт пам'яті для адміністраторів"
+)
+
+# Функція для виведення значення і пояснення
+function check_wp_config_setting {
+    setting_name=$1
+    description=$2
+    setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
+
+    if [ ! -z "$setting_value" ]; then
+        echo "Налаштування: $setting_name"
+        echo "Значення: $setting_value"
+        echo "Опис: $description"
+        echo ""
+    else
+        echo "Налаштування: $setting_name - не знайдено в файлі wp-config.php"
+        echo ""
+    fi
+}
+
+# Перевірка важливих налаштувань у wp-config.php
+for setting in "${!settings[@]}"; do
+    check_wp_config_setting "$setting" "${settings[$setting]}"
+done
+
+# Тепер виведемо інші налаштування, яких немає в списку
+echo "Інші налаштування, яких немає в попередньому списку:"
+echo ""
+
+# Шукаємо всі define в wp-config.php і перевіряємо, чи є вони у списку
+grep -oP "define\(\s*'\K[^\']+" "$wp_config_file" | while read -r setting_name; do
+    if [[ -z "${settings[$setting_name]}" ]]; then
+        setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^\']+" "$wp_config_file")
+        echo "Налаштування: $setting_name"
+        echo "Значення: $setting_value"
+        echo "Опис: Не вказано в списку"
+        echo ""
+    fi
+done
 
 }
 
@@ -512,7 +541,7 @@ case $choice in
         replace_url
         ;;
     14)
-        error_database
+        error_config
         ;;
     15)
         exit 0
