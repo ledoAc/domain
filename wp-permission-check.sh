@@ -138,9 +138,11 @@ RewriteRule . /index.php [L]
 
 # END WordPress
 EOL
+    chmod 0644 "$htaccess_path"
     echo -e "${LIGHT_GREEN}Файл .htaccess успішно створено.${RESET}"
   fi
 }
+
 
 
 change_user_password() {
