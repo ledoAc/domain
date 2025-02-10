@@ -460,6 +460,8 @@ function check_wp_config_setting {
         echo -e "${ORANGE}Значення:${RESET} $setting_value"
         echo -e "${ORANGE}Опис:${RESET} $description"
         echo ""
+        else
+        echo "Налаштувань не знайдено"
         
     fi
 }
