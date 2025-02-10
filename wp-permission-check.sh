@@ -414,7 +414,7 @@ LIGHT_GREEN="\033[1;32m"
 ORANGE="\033[1;33m"
 RESET="\033[0m"
 
-echo -e "${LIGHT_GREEN}Перевірка wp-config.php на налаштування...${RESET}"
+echo -e "${ORANGE}Перевірка wp-config.php на налаштування...${RESET}"
 
 wp_config_file="wp-config.php"
 
