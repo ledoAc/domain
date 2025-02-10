@@ -54,7 +54,7 @@ check_permissions() {
             log_message "${RED}Папка з неправильними правами: $dir (поточні: $perms, повинні бути: $EXPECTED_DIR_PERMS)${RESET}"
             chmod "$EXPECTED_DIR_PERMS" "$dir"
         fi
-    done < <(find "$wp_path" -mindepth 1 -type d -print0) # -mindepth 1 також виключає public_html
+    done < <(find "$wp_path" -mindepth 1 -type d -print0) 
 
     log_message "${LIGHT_GREEN}Перевірка завершена.${RESET}"
 }
@@ -425,32 +425,54 @@ fi
 
 declare -A settings
 settings=(
-    ["DISABLE_WP_CRON"]="Відключення WP Cron (автоматичне виконання задач у WordPress)"
-    ["WP_MEMORY_LIMIT"]="Зміна ліміту пам'яті для WordPress"
-    ["WP_DEBUG"]="Включення режиму налагодження"
-    ["WP_DEBUG_LOG"]="Логування помилок у файл wp-content/debug.log"
-    ["DISALLOW_FILE_EDIT"]="Відключення редактора файлів тем і плагінів через адмінку"
-    ["AUTOMATIC_UPDATER_DISABLED"]="Вимкнення автоматичних оновлень"
-    ["EMPTY_TRASH_DAYS"]="Відключення автоматичного очищення кошика"
-    ["WP_POST_REVISIONS"]="Вимкнення збереження версій публікацій"
-    ["REST_API_ENABLED"]="Вимкнення REST API для підвищення безпеки"
-    ["WP_SITEURL"]="URL сайту (Site URL)"
-    ["WP_HOME"]="URL домашньої сторінки"
-    ["WP_CACHE"]="Увімкнення кешування"
-    ["WP_ALLOW_REPAIR"]="Дозволяє ремонтувати базу даних через URL"
-    ["WP_DEBUG_DISPLAY"]="Виведення помилок на екран"
-    ["FORCE_SSL_ADMIN"]="Примусовий SSL для адмінки"
-    ["DISALLOW_UNFILTERED_HTML"]="Заборона вставляти небезпечний HTML"
-    ["WPLANG"]="Мова WordPress"
-    ["WP_DEFAULT_THEME"]="Тема за замовчуванням"
-    ["COOKIE_DOMAIN"]="Домен для cookie"
-    ["COOKIEPATH"]="Шлях до cookie"
-    ["WP_CONTENT_DIR"]="Шлях до каталогу контенту"
-    ["WP_CONTENT_URL"]="URL каталогу контенту"
-    ["WP_PLUGIN_DIR"]="Шлях до каталогу плагінів"
-    ["WP_PLUGIN_URL"]="URL каталогу плагінів"
-    ["WP_TEMP_DIR"]="Шлях до тимчасового каталогу"
-    ["WP_MEMORY_LIMIT"]="Ліміт пам'яті для PHP"
+["DISABLE_WP_CRON"]="Відключення WP Cron (автоматичне виконання задач у WordPress)"
+["WP_MEMORY_LIMIT"]="Зміна ліміту пам'яті для WordPress"
+["WP_DEBUG"]="Включення режиму налагодження"
+["WP_DEBUG_LOG"]="Логування помилок у файл wp-content/debug.log"
+["DISALLOW_FILE_EDIT"]="Відключення редактора файлів тем і плагінів через адмінку"
+["AUTOMATIC_UPDATER_DISABLED"]="Вимкнення автоматичних оновлень"
+["EMPTY_TRASH_DAYS"]="Відключення автоматичного очищення кошика"
+["WP_POST_REVISIONS"]="Вимкнення збереження версій публікацій"
+["REST_API_ENABLED"]="Вимкнення REST API для підвищення безпеки"
+["WP_SITEURL"]="URL сайту (Site URL)"
+["WP_HOME"]="URL домашньої сторінки"
+["WP_CACHE"]="Увімкнення кешування"
+["WP_ALLOW_REPAIR"]="Дозволяє ремонтувати базу даних через URL"
+["WP_DEBUG_DISPLAY"]="Виведення помилок на екран"
+["FORCE_SSL_ADMIN"]="Примусовий SSL для адмінки"
+["DISALLOW_UNFILTERED_HTML"]="Заборона вставляти небезпечний HTML"
+["WPLANG"]="Мова WordPress"
+["WP_DEFAULT_THEME"]="Тема за замовчуванням"
+["COOKIE_DOMAIN"]="Домен для cookie"
+["COOKIEPATH"]="Шлях до cookie"
+["WP_CONTENT_DIR"]="Шлях до каталогу контенту"
+["WP_CONTENT_URL"]="URL каталогу контенту"
+["WP_PLUGIN_DIR"]="Шлях до каталогу плагінів"
+["WP_PLUGIN_URL"]="URL каталогу плагінів"
+["WP_TEMP_DIR"]="Шлях до тимчасового каталогу"
+["WP_MEMORY_LIMIT"]="Ліміт пам'яті для PHP"
+["FORCE_SSL_LOGIN"]="Примусовий SSL для входу"
+["DISALLOW_FILE_MODS"]="Запобігання змінам файлів через адмінку"
+["WP_LOCAL_DEV"]="Режим для локального розвитку"
+["WP_TIMEZONE_STRING"]="Тимчасова зона"
+["DB_NAME"]="Назва бази даних"
+["DB_USER"]="Ім’я користувача для бази даних"
+["DB_PASSWORD"]="Пароль користувача для бази даних"
+["DB_HOST"]="Хост для бази даних"
+["DB_CHARSET"]="Набір символів для бази даних"
+["DB_COLLATE"]="Коллетація бази даних"
+["WP_AUTO_UPDATE_CORE"]="Автоматичні оновлення основних файлів"
+["WP_BLOG_ID"]="ID блогу"
+["WP_CONFIG_FILE"]="Шлях до файлу wp-config.php"
+["WP_ALLOW_MULTISITE"]="Включення багатосайтовості"
+["MULTISITE"]="Активування багатосайтовості"
+["SUBDOMAIN_INSTALL"]="Встановлення піддоменів для мережі"
+["DOMAIN_CURRENT_SITE"]="Поточний домен сайту"
+["PATH_CURRENT_SITE"]="Шлях поточного сайту"
+["SITE_ID_CURRENT_SITE"]="ID поточного сайту"
+["WP_HTTP_BLOCK_EXTERNAL"]="Блокує зовнішні HTTP-запити"
+["WP_HTTP_PROXY_HOST"]="Проксі-сервер для HTTP-запитів"
+["WP_HTTP_PROXY_PORT"]="Порт для проксі"
 )
 
 exclude_settings=("ABSPATH" "NONCE_SALT" "LOGGED_IN_SALT" "SECURE_AUTH_SALT" "AUTH_SALT" "NONCE_KEY" "LOGGED_IN_KEY" "SECURE_AUTH_KEY" "AUTH_KEY" "DB_COLLATE" "DB_CHARSET" "DB_HOST" "DB_PASSWORD" "DB_USER" "DB_NAME")
@@ -469,9 +491,7 @@ function check_wp_config_setting {
         echo -e "${ORANGE}Значення:${RESET} $setting_value"
         echo -e "${ORANGE}Опис:${RESET} $description"
         echo ""
-        else
-        echo "Налаштувань не знайдено"
-        
+               
     fi
 }
 
