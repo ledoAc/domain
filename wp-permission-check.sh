@@ -2,7 +2,8 @@
 clear
 
 wp_path=$(pwd)
- 
+
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[0;33m'
@@ -409,10 +410,6 @@ echo "Заміна '$search' на '$replace' завершена!"
 }
 
 error_config(){
-
-LIGHT_GREEN="\033[1;32m"
-ORANGE="\033[1;33m"
-RESET="\033[0m"
 
 echo -e "${ORANGE}Перевірка wp-config.php на налаштування...${RESET}"
 
