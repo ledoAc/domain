@@ -482,7 +482,11 @@ exclude_settings=("ABSPATH" "NONCE_SALT" "LOGGED_IN_SALT" "SECURE_AUTH_SALT" "AU
 function check_wp_config_setting {
     setting_name=$1
     description=$2
-    setting_value=$(grep -oP "define\(\s*'$setting_name',\s*'\K[^']+" "$wp_config_file")
+    setting_value=$(grep -oP "define\(\s*'$setting_name',\s*(\K[^,]+)" "$wp_config_file")
+
+    if [ -z "$setting_value" ]; then
+        setting_value=$(grep -oP "define\(\s*'$setting_name',\s*(true|false)\s*\)" "$wp_config_file" | sed -E "s/define\(\s*'${setting_name}',\s*(true|false)\)/\1/")
+    fi
 
     if [[ " ${exclude_settings[@]} " =~ " $setting_name " ]]; then
         return 0
@@ -493,9 +497,9 @@ function check_wp_config_setting {
         echo -e "${ORANGE}Значення:${RESET} $setting_value"
         echo -e "${ORANGE}Опис:${RESET} $description"
         echo ""
-               
     fi
 }
+
 
 for setting in "${!settings[@]}"; do
     check_wp_config_setting "$setting" "${settings[$setting]}"
