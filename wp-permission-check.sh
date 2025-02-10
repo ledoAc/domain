@@ -491,9 +491,9 @@ function check_wp_config_setting {
     fi
 
     if [ ! -z "$setting_value" ]; then
-        echo -e "${ORANGE}Налаштування:${RESET} $setting_name"
-        echo -e "${ORANGE}Значення:${RESET} $setting_value"
-        echo -e "${ORANGE}Опис:${RESET} $description"
+        echo -e "${YELLOW}Налаштування:${RESET} $setting_name"
+        echo -e "${YELLOW}Значення:${RESET} $setting_value"
+        echo -e "${YELLOW}Опис:${RESET} $description"
         echo ""
     fi
 }
