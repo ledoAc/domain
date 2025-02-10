@@ -518,7 +518,7 @@ user_list
 url_site
 error_config
 
-
+while true; do
 echo -e "${ORANGE}Обери дію:${RESET}"
 echo "1. Змінити пароль адміністратора"
 echo "2. Додати нового адміністратора"
@@ -583,3 +583,4 @@ case $choice in
         log_message "${RED}Невірний вибір!${RESET}"
         ;;
 esac
+done
