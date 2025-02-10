@@ -473,6 +473,8 @@ settings=(
 ["WP_HTTP_BLOCK_EXTERNAL"]="Блокує зовнішні HTTP-запити"
 ["WP_HTTP_PROXY_HOST"]="Проксі-сервер для HTTP-запитів"
 ["WP_HTTP_PROXY_PORT"]="Порт для проксі"
+["DISALLOW_FILE_MODS"]="Відключення можливості модифікації плагінів та тем через адмінку"
+
 )
 
 exclude_settings=("ABSPATH" "NONCE_SALT" "LOGGED_IN_SALT" "SECURE_AUTH_SALT" "AUTH_SALT" "NONCE_KEY" "LOGGED_IN_KEY" "SECURE_AUTH_KEY" "AUTH_KEY" "DB_COLLATE" "DB_CHARSET" "DB_HOST" "DB_PASSWORD" "DB_USER" "DB_NAME")
