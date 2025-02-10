@@ -6,7 +6,7 @@ wp_path=$(pwd)
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 RESET='\033[0m'
 ORANGE='\033[0;38;5;214m'
