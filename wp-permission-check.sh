@@ -29,8 +29,8 @@ else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
 
-check_permissions() {
-   check_permissions() {
+
+ check_permissions() {
     log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
     while IFS= read -r -d '' file; do
@@ -52,7 +52,6 @@ check_permissions() {
     log_message "${LIGHT_GREEN}Перевірка завершена.${RESET}"
 }
 
-}
 user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list
