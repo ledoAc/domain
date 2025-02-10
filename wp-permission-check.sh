@@ -30,43 +30,28 @@ else
 fi
 
 check_permissions() {
+   check_permissions() {
     log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
 
-    
-    incorrect_files_count=0
-    incorrect_folders_count=0
-
-    find "$wp_path" -type f | while read file; do
+    while IFS= read -r -d '' file; do
         perms=$(stat -c "%a" "$file")
         expected_perms="644"
         if [ "$perms" != "$expected_perms" ]; then
             log_message "${RED}Файл з неправильними правами доступу: $file (поточні: $perms, повинні бути: $expected_perms)${RESET}"
-            incorrect_files_count=$((incorrect_files_count+1))
         fi
-    done
+    done < <(find "$wp_path" -type f -print0)
 
-
-    find "$wp_path" -type d | while read dir; do
+    while IFS= read -r -d '' dir; do
         perms=$(stat -c "%a" "$dir")
         expected_perms="755"
         if [ "$perms" != "$expected_perms" ]; then
             log_message "${RED}Папка з неправильними правами доступу: $dir (поточні: $perms, повинні бути: $expected_perms)${RESET}"
-            incorrect_folders_count=$((incorrect_folders_count+1))
         fi
-    done
+    done < <(find "$wp_path" -mindepth 1 -type d -print0)
 
-    
-    if [ "$incorrect_files_count" -gt 0 ]; then
-        log_message "${RED}Кількість файлів з неправильними правами доступу: $incorrect_files_count${RESET}"
-    fi
+    log_message "${LIGHT_GREEN}Перевірка завершена.${RESET}"
+}
 
-    if [ "$incorrect_folders_count" -gt 0 ]; then
-        log_message "${RED}Кількість папок з неправильними правами доступу: $incorrect_folders_count${RESET}"
-    fi
-
-    if [ "$incorrect_files_count" -eq 0 ] && [ "$incorrect_folders_count" -eq 0 ]; then
-        log_message "${LIGHT_GREEN}Всі файли та папки мають правильні права доступу.${RESET}"
-    fi
 }
 user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
