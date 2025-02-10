@@ -254,7 +254,8 @@ backup_wordpress() {
     wp db export "$DB_BACKUP"
 
     if [ $? -eq 0 ]; then
-        echo -e "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP ${RESET}"+-
+        chmod 0644 "$DB_BACKUP"
+        echo -e "${LIGHT_GREEN}Дамп БД збережено у $DB_BACKUP ${RESET}"
     else
         echo "Помилка експорту бази даних!"
         exit 1
@@ -283,7 +284,8 @@ backup_wordpress() {
     '
 
     if [ $? -eq 0 ]; then
-        echo -e "${ORANGE} Бекап файлів збережено у $ZIP_BACKUP ${RESET}"
+        chmod 0644 "$ZIP_BACKUP"  
+        echo -e "${ORANGE}Бекап файлів збережено у $ZIP_BACKUP${RESET}"
     else
         echo "Помилка архівування файлів!"
         exit 1
