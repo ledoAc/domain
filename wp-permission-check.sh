@@ -29,29 +29,38 @@ else
     log_message "${YELLOW}Файл version.php не знайдений. ${RESET}"
 fi
 
+check_permissions() {
+    if [[ -z "$wp_path" || ! -d "$wp_path" ]]; then
+        log_message "${RED}Помилка: wp_path не задано або не існує!${RESET}"
+        return 1
+    fi
 
- check_permissions() {
     log_message "${ORANGE}Перевірка папок та файлів з неправильними правами доступу...${RESET}"
+
+    EXPECTED_FILE_PERMS="644"
+    EXPECTED_DIR_PERMS="755"
 
     while IFS= read -r -d '' file; do
         perms=$(stat -c "%a" "$file")
-        expected_perms="644"
-        if [ "$perms" != "$expected_perms" ]; then
-            log_message "${RED}Файл з неправильними правами доступу: $file (поточні: $perms, повинні бути: $expected_perms)${RESET}"
+        if [[ "$perms" != "$EXPECTED_FILE_PERMS" ]]; then
+            log_message "${RED}Файл з неправильними правами: $file (поточні: $perms, повинні бути: $EXPECTED_FILE_PERMS)${RESET}"
+            chmod "$EXPECTED_FILE_PERMS" "$file"
         fi
-    done < <(find "$wp_path" -type f -print0)
+    done < <(find "$wp_path" -mindepth 1 -type f -print0) # -mindepth 1 виключає саму public_html
 
     while IFS= read -r -d '' dir; do
         perms=$(stat -c "%a" "$dir")
-        expected_perms="755"
-        if [ "$perms" != "$expected_perms" ]; then
-            log_message "${RED}Папка з неправильними правами доступу: $dir (поточні: $perms, повинні бути: $expected_perms)${RESET}"
+        if [[ "$perms" != "$EXPECTED_DIR_PERMS" ]]; then
+            log_message "${RED}Папка з неправильними правами: $dir (поточні: $perms, повинні бути: $EXPECTED_DIR_PERMS)${RESET}"
+            chmod "$EXPECTED_DIR_PERMS" "$dir"
         fi
-    done < <(find "$wp_path" -mindepth 1 -type d -print0)
+    done < <(find "$wp_path" -mindepth 1 -type d -print0) # -mindepth 1 також виключає public_html
 
     log_message "${LIGHT_GREEN}Перевірка завершена.${RESET}"
 }
 
+
+ 
 user_list() {
     echo -e "${ORANGE}Список користувачів WordPress:${RESET}"
     wp user list
