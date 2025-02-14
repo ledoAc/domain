@@ -509,7 +509,7 @@ done
 }
 
 get_last_error_log
-check_permissions
+
 check_database_errors
 user_list
 url_site
@@ -520,17 +520,18 @@ echo -e "${ORANGE}Обери дію:${RESET}"
 echo "1. Змінити пароль адміністратора"
 echo "2. Додати нового адміністратора"
 echo "3. Оновити роль користувача"
-echo "4. Виправити права доступу"
-echo "5. Відключити плагіни та .htaccess"
-echo "6. Замінити дефолтні файли WordPress"
-echo "7. Видалити .htaccess файли"
-echo "8. Створити .htaccess файл"
-echo "9. Створити бекап"
-echo "10. Відновити бекап .wpess"
-echo "11. Відключити потрібний плагін"
-echo "12. Змінити тему сайту"
-echo "13. Замінити лінки в базі даних"
-echo "14. Вихід"
+echo "4. Перевірити права доступу"
+echo "5. Виправити права доступу"
+echo "6. Відключити плагіни та .htaccess"
+echo "7. Замінити дефолтні файли WordPress"
+echo "8. Видалити .htaccess файли"
+echo "9. Створити .htaccess файл"
+echo "10. Створити бекап"
+echo "11. Відновити бекап .wpess"
+echo "12. Відключити потрібний плагін"
+echo "13. Змінити тему сайту"
+echo "14. Замінити лінки в базі даних"
+echo "15. Вихід"
 read -p "Введіть номер вибору: " choice
 
 case $choice in
@@ -543,37 +544,39 @@ case $choice in
     3)
         update_user_role
         ;;
-    4)
+    4) check_permissions
+       ;;
+    5)
         fix_permissions
         ;;
-    5)
+    6)
         disable_plugins_and_htaccess
         ;;
-    6)
+    7)
         replace_default_files
         ;;
-    7) 
+    8) 
         remove_htaccess_files
         ;;
-    8)
+    9)
        create_htaccess
        ;;
-    9) 
+    10) 
         backup_wordpress
         ;;
-    10) 
+    11) 
         restore_wp_backup
         ;;
-    11) 
+    12)
         plugin_deactivate
         ;;
-    12)
+    13)
         theme_activation
         ;;
-    13)
+    14)
         replace_url
         ;;
-     14)
+     15)
         exit 0
         ;;
     *)
