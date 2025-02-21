@@ -197,28 +197,37 @@ fi
 
 
 
+
 if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
 
-    echo "=====================| PORT1 |====================="
+    echo "=====================| PORT CHECK2 |====================="
 
     if [ "$param" = "-port" ]; then
         read -p "Enter the IP address: " IP
         read -p "Enter the ports (space-separated): " -a PORTS
 
         for PORT in "${PORTS[@]}"; do
-            echo "Checking port $PORT..."
+            echo "Checking TCP port $PORT..."
             if nc -z -v -w 3 "$IP" "$PORT" 2>&1 | grep -q "succeeded"; then
-                echo "Port $PORT is open."
+                echo "✅ TCP Port $PORT is open."
             else
-                echo "Port $PORT is closed."
+                echo "❌ TCP Port $PORT is closed or filtered."
+            fi
+
+            echo "Checking UDP port $PORT..."
+            if nmap -sU -p "$PORT" "$IP" | grep -q "open"; then
+                echo "✅ UDP Port $PORT is open."
+            else
+                echo "❌ UDP Port $PORT is closed or filtered."
             fi
         done
     fi
 
     echo "=====================| END OF CHECK |====================="
 fi
+
 
 
 
