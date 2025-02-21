@@ -201,30 +201,25 @@ if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
 
-    print_in_frame_dom "=====================| PORT |====================="
+    echo "=====================| PORT1 |====================="
 
     if [ "$param" = "-port" ]; then
         read -p "Enter the IP address: " IP
-        read -p "Enter the ports: " -a PORTS
+        read -p "Enter the ports (space-separated): " -a PORTS
 
-        for PORT in "${PORTS[@]}"
-        do
+        for PORT in "${PORTS[@]}"; do
             echo "Checking port $PORT..."
-
-            RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
-
-            if echo "$RESPONSE" | grep -q "is open"; then
+            if nc -z -v -w 3 "$IP" "$PORT" 2>&1 | grep -q "succeeded"; then
                 echo "Port $PORT is open."
             else
                 echo "Port $PORT is closed."
             fi
         done
-    else
-        echo ""
     fi
 
-    print_in_frame_dom "=====================| END OF CHECK |====================="
+    echo "=====================| END OF CHECK |====================="
 fi
+
 
 
 
