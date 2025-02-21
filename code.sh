@@ -217,8 +217,7 @@ if [ "$1" = "-port" ]; then
             echo "Port $PORT is closed.."
         fi
     done
-else
-    echo "Use the -port option to check ports."
+
 fi
 
 
