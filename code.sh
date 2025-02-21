@@ -197,27 +197,37 @@ fi
 
 
 
-if [ "$1" = "-port" ]; then
+#!/bin/bash
 
-    read -p "Enter IP address: " IP
+# Перевірка, чи передано два параметри
+if [ "$#" -eq 2 ]; then
+    domain="$1"
+    param="$2"
 
-    read -p "Enter IP address: " -a PORTS
+    # Якщо параметр -port, запускається перевірка портів
+    if [ "$param" = "-port" ]; then
+        # Просимо користувача ввести IP адресу
+        read -p "Введіть IP адресу для перевірки: " IP
 
-    for PORT in "${PORTS[@]}"
-    do
-        echo "Checking port $PORT..."
+        # Просимо користувача ввести порти через пробіл
+        read -p "Введіть порти для перевірки через пробіл (наприклад, 22 80 443 8080): " -a PORTS
 
+        # Перевіряємо кожен порт
+        for PORT in "${PORTS[@]}"
+        do
+            echo "Перевіряємо порт $PORT..."
 
-        RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
+            # Використовуємо curl для взаємодії з YouGetSignal
+            RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
 
-
-        if echo "$RESPONSE" | grep -q "is open"; then
-            echo "Port $PORT is open."
-        else
-            echo "Port $PORT is closed.."
-        fi
-    done
-
+            # Перевірка на наявність "is open" в відповіді
+            if echo "$RESPONSE" | grep -q "is open"; then
+                echo "Порт $PORT відкритий."
+            else
+                echo "Порт $PORT закритий."
+            fi
+        done
+    fi
 fi
 
 
