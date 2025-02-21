@@ -196,6 +196,34 @@ echo -e "\e[96m#################################################################
 fi
 
 
+
+if [ "$1" = "-port" ]; then
+
+    read -p "Enter IP address: " IP
+
+    read -p "Enter IP address: " -a PORTS
+
+    for PORT in "${PORTS[@]}"
+    do
+        echo "Checking port $PORT..."
+
+
+        RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
+
+
+        if echo "$RESPONSE" | grep -q "is open"; then
+            echo "Port $PORT is open."
+        else
+            echo "Port $PORT is closed.."
+        fi
+    done
+else
+    echo "Use the -port option to check ports."
+fi
+
+
+
+
 if [ "$#" -eq 2 ]; then
     param="$2"
     domain="$1"
