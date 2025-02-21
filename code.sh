@@ -198,39 +198,32 @@ fi
 
 
 
-# Перевірка, чи передано два параметри
 if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
 
-    # Якщо параметр -port, запускається перевірка портів
+ 
     if [ "$param" = "-port" ]; then
-        # Просимо користувача ввести IP адресу
-        read -p "Введіть IP адресу для перевірки: " IP
+        read -p "Enter the IP address: " IP
 
-        # Просимо користувача ввести порти через пробіл
-        read -p "Введіть порти для перевірки через пробіл (наприклад, 22 80 443 8080): " -a PORTS
+        read -p "Enter the port: " -a PORTS
 
-        # Перевіряємо кожен порт
         for PORT in "${PORTS[@]}"
         do
-            echo "Перевіряємо порт $PORT..."
+            echo "Checking the port $PORT..."
 
-            # Використовуємо curl для взаємодії з YouGetSignal
             RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
 
-            # Перевірка на наявність "is open" в відповіді
             if echo "$RESPONSE" | grep -q "is open"; then
-                echo "Порт $PORT відкритий."
+                echo "Port $PORT is open."
             else
-                echo "Порт $PORT закритий."
+                echo "Port $PORT is closed."
             fi
         done
     else
-        echo "Невірний параметр. Використовуйте -port для перевірки портів."
+        echo ""
     fi
-else
-    echo "Будь ласка, введіть домен і параметр (-port)."
+
 fi
 
 
