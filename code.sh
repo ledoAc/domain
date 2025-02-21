@@ -196,34 +196,21 @@ echo -e "\e[96m#################################################################
 fi
 
 
-#!/bin/bash
 
-# Функція для виведення заголовка в рамці
-print_in_frame_dom() {
-    echo -e "\e[96m####################################################################################################################################################\e[0m"
-    echo -e "\e[96m$1\e[0m"
-    echo -e "\e[96m####################################################################################################################################################\e[0m"
-}
-
-# Перевірка, чи передано два параметри
 if [ "$#" -eq 2 ]; then
     domain="$1"
     param="$2"
 
-    # Виведення заголовка
     print_in_frame_dom "=====================| PORT |====================="
 
-    # Перевірка, чи параметр -port
     if [ "$param" = "-port" ]; then
         read -p "Enter the IP address: " IP
-        read -p "Enter the ports to check (separated by spaces): " -a PORTS
+        read -p "Enter the ports: " -a PORTS
 
-        # Перевірка кожного порту
         for PORT in "${PORTS[@]}"
         do
             echo "Checking port $PORT..."
 
-            # Використовуємо curl для перевірки порту
             RESPONSE=$(curl -s "https://www.yougetsignal.com/tools/open-ports/?remoteAddress=$IP&remotePort=$PORT")
 
             if echo "$RESPONSE" | grep -q "is open"; then
@@ -236,11 +223,7 @@ if [ "$#" -eq 2 ]; then
         echo ""
     fi
 
-    # Виведення заголовка для завершення
     print_in_frame_dom "=====================| END OF CHECK |====================="
-
-else
-    echo "Please provide a domain and parameter (-port)."
 fi
 
 
