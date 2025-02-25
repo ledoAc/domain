@@ -6,6 +6,11 @@ GREEN='\e[92m'
 YELLOW='\e[93m'
 BLUE='\e[94m'
 NC='\e[0m' 
+LIGHT_GREEN='\033[1;32m'
+ORANGE='\e[38;5;214m'
+
+
+echo -e "${LIGHT_GREEN}#################### Laravel troubleshooter ####################${NS}"
 
 if [ ! -f artisan ]; then
     echo -e "${RED}Помилка: Схоже, що ви не знаходитеся в кореневій директорії Laravel.${NC}"
@@ -60,12 +65,12 @@ while true; do
         8)
             echo -e "${GREEN}Включаємо debug mode${NC}"
             sed -i 's/APP_DEBUG=.*/APP_DEBUG=true/' .env && php artisan config:clear
-            echo -e "Дебаг мод включено успішно"
+            echo -e "${ORANGE}Дебаг мод включено успішно${NC}"
             ;;
         9)
             echo -e "${GREEN}Вимикаємо debug mode${NC}"
             sed -i 's/APP_DEBUG=.*/APP_DEBUG=false/' .env && php artisan config:clear
-            echo -e "Дебаг мод виключено успішно"
+            echo -e "${ORANGE}Дебаг мод виключено успішно${NC}"
             ;;
         10)
             echo -e "${RED}Вихід...${NC}"
