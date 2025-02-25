@@ -63,7 +63,7 @@ while true; do
             find "$ROOT_DIR" -type f ! -perm 644 -exec chmod 644 {} \;
             echo -e "${GREEN}Виправлення завершено!${NC}"
             ;;
-        14) php "$CLI_PATH" cache:clean | tee -a "$LOG_FILE" ;;
+        14) php "$CLI_PATH" cache:clean ;;
                0) echo -e "${RED}Вихід...${NC}"; exit 0 ;;
         *) echo -e "${RED}Невірний вибір, спробуйте ще раз.${NC}"; sleep 2 ;;
     esac
