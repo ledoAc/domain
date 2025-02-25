@@ -56,6 +56,9 @@ if [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#dir_paths[@]} ]]; then
     elif [ -f "$selected_dir/administrator/manifests/files/joomla.xml" ]; then
         echo -e "\033[92mВибрано Joomla сайт, виконую перевірку.\033[0m"
         cd "$selected_dir" && bash <(curl -s https://raw.githubusercontent.com/ledoAc/domain/main/joomla.sh)
+    elif [ -f "$selected_dir/artisan" ]; then
+        echo -e "\033[92mВибрано Laravel сайт, виконую перевірку.\033[0m"
+        cd "$selected_dir" && bash <(curl -s https://raw.githubusercontent.com/ledoAc/domain/main/laravel.sh)
     else
         echo -e "\033[31mНа жаль для вибраного каталогу ще не доступна перевірка. Вибачте за незручності.\033[0m"
     fi
