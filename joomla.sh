@@ -24,7 +24,7 @@ while true; do
     echo -e "${YELLOW}7)${NC} Виключити на сайті режим обслуговування"
     echo -e "${YELLOW}8)${NC} Список користувачів"
     echo -e "${YELLOW}9)${NC} Скидання пароля користувача"
-    echo -e "${YELLOW}10)${NC} Переглянути останні 5 рядків error_log"
+    echo -e "${YELLOW}10)${NC} Переглянути error_log"
     echo -e "${YELLOW}11)${NC} Перевірити дозволи на файли та папки"
     echo -e "${YELLOW}12)${NC} Виправити дозволи файлів та папок"
     echo -e "${YELLOW}13)${NC} Очищення кешу Joomla"
