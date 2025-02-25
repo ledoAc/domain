@@ -52,7 +52,7 @@ if [[ "$choice" -ge 1 ]] && [[ "$choice" -le ${#dir_paths[@]} ]]; then
  
     if [ -f "$selected_dir/wp-config.php" ]; then
         echo -e "\033[92mВибрано WordPress сайт, виконую перевірку прав.\033[0m"
-        cd "$selected_dir" && bash <(curl -s https://raw.githubusercontent.com/ledoAc/domain/main/wp-permission-check.sh)
+        cd "$selected_dir" && bash <(curl -s https://raw.githubusercontent.com/ledoAc/domain/main/wordpress.sh)
     elif [ -f "$selected_dir/administrator/manifests/files/joomla.xml" ]; then
         echo -e "\033[92mВибрано Joomla сайт, виконую перевірку.\033[0m"
         cd "$selected_dir" && bash <(curl -s https://raw.githubusercontent.com/ledoAc/domain/main/joomla.sh)
