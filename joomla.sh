@@ -3,6 +3,7 @@
 ERROR_LOG="error_log"
 CLI_PATH="cli/joomla.php"
 ROOT_DIR="$(pwd)"
+LOG_FILE="joomla_commands.log"
 
 
 RED='\e[91m'
