@@ -9,8 +9,11 @@ GREEN='\e[92m'
 YELLOW='\e[93m'
 BLUE='\e[96m'
 NC='\e[0m'
-
+LIGHT_GREEN='\033[1;32m'
+AIOWPM_URL="https://github.com/d0n601/All-In-One-WP-Migration-With-Import/archive/master.zip"
 chmod +x "$CLI_PATH"
+echo -e "${LIGHT_GREEN}#################### Joomla troubleshooter ####################${RESET}"
+
 
 while true; do
     clear
