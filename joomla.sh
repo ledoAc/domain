@@ -12,7 +12,7 @@ NC='\e[0m'
 LIGHT_GREEN='\033[1;32m'
 chmod +x "$CLI_PATH"
 
-echo -e "${LIGHT_GREEN}#################### Joomla troubleshooter ####################${RESET}"
+echo -e "${LIGHT_GREEN}#################### Joomla troubleshooter ####################${NC}"
 
 
 while true; do
