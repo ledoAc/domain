@@ -3,8 +3,6 @@
 ERROR_LOG="error_log"
 CLI_PATH="cli/joomla.php"
 ROOT_DIR="$(pwd)"
-LOG_FILE="joomla_commands.log"
-
 
 RED='\e[91m'
 GREEN='\e[92m'
@@ -22,8 +20,8 @@ while true; do
     echo -e "${YELLOW}3)${NC} Індексація контенту Finder (оновлює пошукову базу для швидкого пошуку)"
     echo -e "${YELLOW}4)${NC} Обслуговування бази даних (перевірка та виправлення помилок БД)"
     echo -e "${YELLOW}5)${NC} Очищення сесій (видаляє застарілі сесії для оптимізації роботи)"
-    echo -e "${YELLOW}6)${NC} Переключити сайт в режим обслуговування"
-    echo -e "${YELLOW}7)${NC} Вивести сайт з режиму обслуговування"
+    echo -e "${YELLOW}6)${NC} Переключити на сайті режим обслуговування"
+    echo -e "${YELLOW}7)${NC} Виключити на сайті режим обслуговування"
     echo -e "${YELLOW}8)${NC} Список користувачів"
     echo -e "${YELLOW}9)${NC} Скидання пароля користувача"
     echo -e "${YELLOW}10)${NC} Переглянути останні 5 рядків error_log"
@@ -35,18 +33,18 @@ while true; do
     read -p "Введіть номер опції: " choice
 
     case $choice in
-        1) php "$CLI_PATH" core:update | tee -a "$LOG_FILE" ;;
-        2) php "$CLI_PATH" extension:list | tee -a "$LOG_FILE" ;;
-        3) php "$CLI_PATH" finder:index | tee -a "$LOG_FILE" ;;
-        4) php "$CLI_PATH" maintenance:database | tee -a "$LOG_FILE" ;;
-        5) php "$CLI_PATH" session:gc | tee -a "$LOG_FILE" ;;
-        6) php "$CLI_PATH" site:down | tee -a "$LOG_FILE" ;;
-        7) php "$CLI_PATH" site:up | tee -a "$LOG_FILE" ;;
-        8) php "$CLI_PATH" user:list | tee -a "$LOG_FILE" ;;
-        9) php "$CLI_PATH" user:reset-password | tee -a "$LOG_FILE" ;;
+        1) php "$CLI_PATH" core:update ;;
+        2) php "$CLI_PATH" extension:list ;;
+        3) php "$CLI_PATH" finder:index ;;
+        4) php "$CLI_PATH" maintenance:database ;;
+        5) php "$CLI_PATH" session:gc ;;
+        6) php "$CLI_PATH" site:down ;;
+        7) php "$CLI_PATH" site:up ;;
+        8) php "$CLI_PATH" user:list ;;
+        9) php "$CLI_PATH" user:reset-password ;;
         10)
             if [ -f "$ERROR_LOG" ]; then
-                echo -e "${BLUE}Останні 5 рядків з error_log:${NC}"
+                echo -e "${BLUE}Помилки з error_log:${NC}"
                 tail -n 5 "$ERROR_LOG"
             else
                 echo -e "${RED}Файл error_log не знайдено!${NC}"
