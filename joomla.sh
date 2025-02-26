@@ -67,7 +67,7 @@ while true; do
             echo -e "${GREEN}Виправлення завершено!${NC}"
             ;;
         14) php "$CLI_PATH" cache:clean ;;
-               0) echo -e "${RED}Вихід...${NC}"; exit 0 ;;
+               15) echo -e "${RED}Вихід...${NC}"; exit 0 ;;
         *) echo -e "${RED}Невірний вибір, спробуйте ще раз.${NC}"; sleep 2 ;;
     esac
 
