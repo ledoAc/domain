@@ -203,68 +203,32 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-scan" ]; then
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
         web_serv=$(dig +short -x "$serv_a_records")
-print_in_frame "Scan"
+        print_in_frame "Scan"
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
-    server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-    
-    if [ -z "$server_record" ]; then
-        echo "Error: Server record not found. Exiting."
-        exit 1
-    fi
-
-    cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
-    
-    if [ -z "$cuser" ]; then
-        echo "Error: Unable to determine user for domain $domain. Exiting."
-        exit 1
-    fi
-    
-    echo "Select scan type:"
-    echo "1. Scan"
-    read -p "Your choice (1): " CHOICE
-
-    case $CHOICE in
-        1)
-            scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
-            echo "Scan in progress..."
-            echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
-            ;;
-        *)
-            echo "Invalid choice. Please choose 1."
-            exit 1
-            ;;
-    esac
-
-
-            echo
-            echo -e "\e[96m####################################################################################################################################################\e[0}"
-
+            server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+            if [ -z "$server_record" ]; then
+                echo "Error: Server record not found. Exiting."
+                exit 1
+            fi
+            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
+            if [ -z "$cuser" ]; then
+                echo "Error: Unable to determine user for domain $domain. Exiting."
+                exit 1
+            fi
         else
             while [[ -z "$server_record_new" ]]; do
                 read -p "Enter the full name of the server: " server_record_new
             done
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
             cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /scripts/whoowns $domain")
-            echo "Select scan type:"
-            echo "1. Scan"
-            read -p "Your choice (1): " CHOICE
-
-            case $CHOICE in
-                1)
-                    scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
-                    echo "Scan in progress..."
-		    echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
-                    ;;
-        
-                *)
-                    echo "Invalid choice. Please choose 1"
-                    exit 1
-                    ;;
-            esac
-            echo -e "\e[96m####################################################################################################################################################\e[0}"
         fi
+        scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
+        echo "Scan in progress..."
+        echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
+        echo -e "\e[96m####################################################################################################################################################\e[0]"
     fi
 fi
+
 
 
 
