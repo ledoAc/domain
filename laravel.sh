@@ -10,7 +10,7 @@ LIGHT_GREEN='\033[1;32m'
 ORANGE='\e[38;5;214m'
 
 
-echo -e "${LIGHT_GREEN}#################### Laravel troubleshooter ####################${NS}"
+echo -e "${LIGHT_GREEN}#################### Laravel troubleshooter ####################${NC}"
 
 if [ ! -f artisan ]; then
     echo -e "${RED}Помилка: Схоже, що ви не знаходитеся в кореневій директорії Laravel.${NC}"
@@ -29,7 +29,8 @@ while true; do
     echo -e "${YELLOW}7)${NC} Генерувати ключ додатку"
     echo -e "${YELLOW}8)${NC} Включити DEBUG mode"
     echo -e "${YELLOW}9)${NC} Вимкнути DEBUG mode"
-    echo -e "${YELLOW}10)${NC} Вийти"
+    echo -e "${YELLOW}10)${NC} Показати налаштування бази з .env"
+    echo -e "${YELLOW}11)${NC} Вийти"
 
     read -p "Введіть номер команди: " choice
 
@@ -73,6 +74,10 @@ while true; do
             echo -e "${ORANGE}Дебаг мод виключено успішно${NC}"
             ;;
         10)
+            echo -e "${GREEN}Налаштування бази даних:${NC}"
+            grep -E 'DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD' .env | sed 's/DB_PASSWORD=.*/DB_PASSWORD=******/'
+            ;;
+        11)
             echo -e "${RED}Вихід...${NC}"
             exit 0
             ;;
