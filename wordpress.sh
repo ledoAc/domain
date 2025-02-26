@@ -399,15 +399,14 @@ fi
 }
 
 replace_url(){
+  read -p "Домен який треба замінити: " search
+  read -p "Домен на який замінити: " replace
 
-read -p -e "${LIGHT_GREEN}Домен який треба замінити: ${RESET}" search
-read -p -e "${LIGHT_GREEN}Домен на який замінити: ${RESET}" replace
+  wp search-replace "$search" "$replace" --all-tables
 
-wp search-replace "$search" "$replace" --all-tables
-
-echo "Заміна '$search' на '$replace' завершена!"
-
+  echo "Заміна '$search' на '$replace' завершена!"
 }
+
 
 error_config(){
 
