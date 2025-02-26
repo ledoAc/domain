@@ -30,7 +30,9 @@ while true; do
     echo -e "${YELLOW}8)${NC} Включити DEBUG mode"
     echo -e "${YELLOW}9)${NC} Вимкнути DEBUG mode"
     echo -e "${YELLOW}10)${NC} Показати налаштування бази з .env"
-    echo -e "${YELLOW}11)${NC} Вийти"
+    echo -e "${YELLOW}11)${NC} Перевірити права доступу"
+    echo -e "${YELLOW}12)${NC} Виправити права доступу"
+    echo -e "${YELLOW}13)${NC} Вийти"
 
     read -p "Введіть номер команди: " choice
 
@@ -78,6 +80,15 @@ while true; do
             grep -E 'DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD' .env | sed 's/DB_PASSWORD=.*/DB_PASSWORD=******/'
             ;;
         11)
+            echo -e "${GREEN}Перевіряємо права доступу...${NC}"
+            ls -ld storage bootstrap/cache
+            ;;
+        12)
+            echo -e "${GREEN}Виправляємо права доступу...${NC}"
+            chmod -R 775 storage bootstrap/cache && chown -R $(whoami):$(whoami) storage bootstrap/cache
+            echo -e "${ORANGE}Права доступу виправлено${NC}"
+            ;;
+        13)
             echo -e "${RED}Вихід...${NC}"
             exit 0
             ;;
