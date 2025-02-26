@@ -78,7 +78,7 @@ while true; do
             ;;
         10)  
             echo -e "${GREEN}Налаштування бази даних:${NC}"
-            grep -E 'DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD' .env | sed 's/DB_PASSWORD=.*/DB_PASSWORD=******/'
+            grep -E 'DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD' .env
             ;;
         11)
            echo -e "${BLUE}Перевірка дозволів файлів та папок у $ROOT_DIR...${NC}"
