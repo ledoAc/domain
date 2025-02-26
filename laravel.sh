@@ -8,6 +8,7 @@ BLUE='\e[94m'
 NC='\e[0m' 
 LIGHT_GREEN='\033[1;32m'
 ORANGE='\e[38;5;214m'
+ROOT_DIR="$(pwd)"
 
 
 echo -e "${LIGHT_GREEN}#################### Laravel troubleshooter ####################${NC}"
@@ -75,18 +76,20 @@ while true; do
             sed -i 's/APP_DEBUG=.*/APP_DEBUG=false/' .env && php artisan config:clear
             echo -e "${ORANGE}Дебаг мод виключено успішно${NC}"
             ;;
-        10)
+        10)  
             echo -e "${GREEN}Налаштування бази даних:${NC}"
             grep -E 'DB_HOST|DB_DATABASE|DB_USERNAME|DB_PASSWORD' .env | sed 's/DB_PASSWORD=.*/DB_PASSWORD=******/'
             ;;
         11)
-            echo -e "${GREEN}Перевіряємо права доступу...${NC}"
-            ls -ld storage bootstrap/cache
+           echo -e "${BLUE}Перевірка дозволів файлів та папок у $ROOT_DIR...${NC}"
+            find "$ROOT_DIR" -type d ! -perm 755 -exec echo -e "${RED}Папка з некоректними дозволами: {}${NC}" \;
+            find "$ROOT_DIR" -type f ! -perm 644 -exec echo -e "${RED}Файл з некоректними дозволами: {}${NC}" \;
             ;;
         12)
-            echo -e "${GREEN}Виправляємо права доступу...${NC}"
-            chmod -R 775 storage bootstrap/cache && chown -R $(whoami):$(whoami) storage bootstrap/cache
-            echo -e "${ORANGE}Права доступу виправлено${NC}"
+            echo -e "${BLUE}Виправлення дозволів файлів та папок у $ROOT_DIR...${NC}"
+            find "$ROOT_DIR" -type d ! -perm 755 -exec chmod 755 {} \;
+            find "$ROOT_DIR" -type f ! -perm 644 -exec chmod 644 {} \;
+            echo -e "${GREEN}Виправлення завершено!${NC}"
             ;;
         13)
             echo -e "${RED}Вихід...${NC}"
