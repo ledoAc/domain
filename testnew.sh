@@ -7,6 +7,8 @@ print_in_frame_dom() {
 
     echo -e "${color}${text}${reset}"
 }
+
+
 # Якщо домен не передано як параметр, запитуємо його
 if [ -z "$1" ]; then
   read -p "Введіть домен: " domain
@@ -34,58 +36,43 @@ fi
 # Зворотний пошук DNS для A запису
 web_serv=$(dig +short -x "$serv_a_records")
 
-# Виведення тільки IP
+# Виведення всього аутпуту
+echo "Результати для домену $domain:"
+echo "--------------------------------------------------"
+dig +short +trace "$domain"
+echo "--------------------------------------------------"
+echo
+
+# Виведення IP-адрес
 echo "IP адреси для домену $domain:"
 echo "$serv_a_records"
+echo
 
-# Фільтруємо і виводимо ботів, якщо в зворотному записі DNS є ключові слова, що вказують на бота
-echo "Перевірка на наявність ботів (наприклад, якщо в зворотному записі DNS міститься 'bot' або схожі фрази):"
+# Виведення бота (якщо у зворотному записі присутні ключові слова)
+echo "Перевірка на наявність ботів:"
 if [[ "$web_serv" == *"bot"* || "$web_serv" == *"crawler"* || "$web_serv" == *"spider"* ]]; then
     echo "Виявлено бота: $web_serv"
 else
     echo "Боти не знайдені"
 fi
 
-# Перевірка, чи зворотний DNS містить потрібну інформацію
-if [[ "$web_serv" == *"web-hosting.com"* ]]; then
-    server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+# Окремо виводимо інформацію про IP та агентів
+echo "--------------------------------------------------"
+echo "Список IP та ботів з аутпуту:"
+echo "--------------------------------------------------"
 
-    cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
-    
-    found_domlogs=false
-    while IFS= read -r line; do
-        if [[ $found_domlogs == true ]]; then
-            echo "$line"
-        else
-            if [[ $line == *"=====================| DOMLOGS |====================="* ]]; then
-                echo
-                print_in_frame_dom "=====================| DOMLOGS |====================="
-                found_domlogs=true
-            fi
-        fi
-    done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null)
+# Виводимо список IP адрес
+echo "IP адреси:"
+grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' <<< "$serv_a_records"
+echo
 
-    echo
+# Виведення бота зі списку user-agent
+echo "Боти (User Agents):"
+grep -i 'bot\|crawler\|spider' <<< "$web_serv"
+echo
 
-    while IFS= read -r line; do
-        echo "$line"
-    done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null)
-
-    found_mysql=false
-    while IFS= read -r line; do
-        if [[ $found_mysql == true ]]; then
-            echo "$line"
-        else
-            if [[ $line == *"=====================| MYSQL |====================="* ]]; then
-                echo
-                print_in_frame_dom "=====================| MYSQL |====================="
-                found_mysql=true
-            fi
-        fi
-    done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null)
-
-    echo
-else
-    echo "Не знайдено відповідного хостинга для домену $domain"
-fi
-echo "end"
+# Для перевірки наявності URL-посилань або інших відповідних даних
+echo "--------------------------------------------------"
+echo "URL-посилання з аутпуту:"
+grep -oE '\/[^\s]+' <<< "$web_serv"
+echo "--------------------------------------------------"
