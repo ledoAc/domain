@@ -15,7 +15,7 @@ fi
 
 echo "Обраний домен: $domain"
 
-# Отримуємо A записи для домену
+# Ваш скрипт далі
 serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
 
 # Перевірка на наявність A запису
@@ -26,18 +26,6 @@ fi
 
 # Зворотний пошук DNS для A запису
 web_serv=$(dig +short -x "$serv_a_records")
-
-# Виведення тільки IP
-echo "IP адреси для домену $domain:"
-echo "$serv_a_records"
-
-# Фільтруємо і виводимо ботів, якщо в зворотному записі DNS є ключові слова, що вказують на бота
-echo "Перевірка на наявність ботів (наприклад, якщо в зворотному записі DNS міститься 'bot' або схожі фрази):"
-if [[ "$web_serv" == *"bot"* || "$web_serv" == *"crawler"* || "$web_serv" == *"spider"* ]]; then
-    echo "Виявлено бота: $web_serv"
-else
-    echo "Боти не знайдені"
-fi
 
 # Перевірка, чи зворотний DNS містить потрібну інформацію
 if [[ "$web_serv" == *"web-hosting.com"* ]]; then
