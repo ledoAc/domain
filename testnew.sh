@@ -1,5 +1,12 @@
 #!/bin/bash
 
+print_in_frame_dom() {
+    local text="$1"
+    local color="\e[96m"
+    local reset="\e[0m"
+
+    echo -e "${color}${text}${reset}"
+}
 # Якщо домен не передано як параметр, запитуємо його
 if [ -z "$1" ]; then
   read -p "Введіть домен: " domain
@@ -81,3 +88,4 @@ if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 else
     echo "Не знайдено відповідного хостинга для домену $domain"
 fi
+echo "end"
