@@ -1,14 +1,5 @@
 #!/bin/bash
 
-print_in_frame_dom() {
-    local text="$1"
-    local color="\e[96m"
-    local reset="\e[0m"
-
-    echo -e "${color}${text}${reset}"
-}
-
-
 # Якщо домен не передано як параметр, запитуємо його
 if [ -z "$1" ]; then
   read -p "Введіть домен: " domain
@@ -43,36 +34,20 @@ dig +short +trace "$domain"
 echo "--------------------------------------------------"
 echo
 
-# Виведення IP-адрес
-echo "IP адреси для домену $domain:"
-echo "$serv_a_records"
-echo
+# Виведення IP-адрес і ботів
+echo "IP адреси та боти з аутпуту:"
 
-# Виведення бота (якщо у зворотному записі присутні ключові слова)
-echo "Перевірка на наявність ботів:"
-if [[ "$web_serv" == *"bot"* || "$web_serv" == *"crawler"* || "$web_serv" == *"spider"* ]]; then
-    echo "Виявлено бота: $web_serv"
-else
-    echo "Боти не знайдені"
-fi
+# Тут буде обробка кожного рядка
+dig +short +trace "$domain" | grep -oP '\d{1,3}(\.\d{1,3}){3}\s+\|\s+\S+\s+\|\s+\S+\s+\|\s+.*' | while read -r line; do
+    # Виводимо інформацію про IP адреси і відповідних ботів
+    ip=$(echo "$line" | awk '{print $1}')
+    country=$(echo "$line" | awk '{print $2}')
+    org=$(echo "$line" | awk '{print $3, $4}')
+    rdns=$(echo "$line" | awk '{print $5, $6}')
+    agent=$(echo "$line" | awk '{for (i=7; i<=NF; i++) printf $i" "; print ""}')
+    
+    # Виведення знайдених даних
+    echo "$ip | $country | $org | $rdns | $agent"
+done
 
-# Окремо виводимо інформацію про IP та агентів
-echo "--------------------------------------------------"
-echo "Список IP та ботів з аутпуту:"
-echo "--------------------------------------------------"
-
-# Виводимо список IP адрес
-echo "IP адреси:"
-grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' <<< "$serv_a_records"
-echo
-
-# Виведення бота зі списку user-agent
-echo "Боти (User Agents):"
-grep -i 'bot\|crawler\|spider' <<< "$web_serv"
-echo
-
-# Для перевірки наявності URL-посилань або інших відповідних даних
-echo "--------------------------------------------------"
-echo "URL-посилання з аутпуту:"
-grep -oE '\/[^\s]+' <<< "$web_serv"
 echo "--------------------------------------------------"
