@@ -66,6 +66,10 @@ if [[ "$web_serv" == *"web-hosting.com"* ]]; then
     done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null)
 
     echo
+
+    # Фільтруємо та виводимо лише IP адреси
+    ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b'
+
 else
     echo "Не знайдено відповідного хостинга для домену $domain"
 fi
