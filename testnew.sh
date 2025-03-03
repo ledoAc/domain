@@ -1,26 +1,33 @@
 #!/bin/bash
 
-domain="$1"
+# Якщо домен не передано як параметр, запитуємо його
+if [ -z "$1" ]; then
+  read -p "Введіть домен: " domain
+else
+  domain="$1"
+fi
 
-# Check if domain is provided
+# Перевірка, чи домен введено
 if [ -z "$domain" ]; then
-  echo "Usage: $0 <domain>"
+  echo "Домен не введено. Завершення скрипта."
   exit 1
 fi
 
-# Fetch the A record
+echo "Обраний домен: $domain"
+
+# Ваш скрипт далі
 serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
 
-# Check if the A record is empty
+# Перевірка на наявність A запису
 if [ -z "$serv_a_records" ]; then
-  echo "No A record found for $domain"
+  echo "A запис для домену $domain не знайдено"
   exit 1
 fi
 
-# Resolve reverse DNS for the A record
+# Зворотний пошук DNS для A запису
 web_serv=$(dig +short -x "$serv_a_records")
 
-# Check if the reverse DNS matches expected pattern
+# Перевірка, чи зворотний DNS містить потрібну інформацію
 if [[ "$web_serv" == *"web-hosting.com"* ]]; then
     server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
 
@@ -60,5 +67,5 @@ if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 
     echo
 else
-    echo "No matching web hosting service found for $domain"
+    echo "Не знайдено відповідного хостинга для домену $domain"
 fi
