@@ -306,45 +306,77 @@ backup_wordpress() {
 
 
  restore_wp_backup() {
-  ORANGE="\e[33m"
-  RESET="\e[0m"
+readonly VERSION='20230406'
 
-  [[ ! -f "${PWD}/wp-config.php" ]] && { echo "WordPress не знайдено"; return 1; }
-  BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
-  [[ ${#BACKUPS[@]} -eq 0 ]] && { echo "Бекапів немає"; return 1; }
-  php -r 'exit(version_compare(PHP_VERSION, "7.4", "<") || version_compare(PHP_VERSION, "9.0", ">=") ? 1 : 0);' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
+AIOWPM_URL="https://github.com/d0n601/All-In-One-WP-Migration-With-Import/archive/master.zip"
 
-  if [[ ${#BACKUPS[@]} -gt 1 ]]; then
-    for i in "${!BACKUPS[@]}"; do echo "$((i+1))) ${BACKUPS[i]}"; done
-    read -rp "Виберіть бекап: " CHOICE
-    [[ ! "$CHOICE" =~ ^[0-9]+$ ]] || ((CHOICE < 1 || CHOICE > ${#BACKUPS[@]})) && { echo "Невірний вибір"; return 1; }
-    BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"
-  else
-    BACKUP_PATH="${BACKUPS[0]}"
-  fi
+function run_wpcli {
+  php -d memory_limit=512M /usr/local/sbin/wp "$@"
+}
 
-  echo -e "${ORANGE}Вибраний бекап: ${BACKUP_PATH}${RESET}"
-  echo -e "${ORANGE}Відновити? [y/n]: ${RESET}"
-  read -r CONFIRM
-  [[ ! "$CONFIRM" =~ ^[yY]$ ]] && { echo "Скасовано"; return 1; }
+[[ ! -f "${PWD}/wp-config.php" ]] && { echo "No wordpress installation found in ${PWD}"; exit 1; }
+BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
+[[ -z "${BACKUPS[*]}" ]] && { echo "No .wpress backups found within ${PWD}"; exit 1; }
+php -v | grep -qE 'PHP (7\.4|8\.[01])\.' || { echo "Please set PHP to 7.4 or 8.X"; exit 1; }
 
-  AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
+if [[ "${#BACKUPS[@]}" -gt 1 ]]; then
+  NUM=1
+  for i in "${BACKUPS[@]}"; do
+    echo "${NUM}. $i"
+    NUM=$((NUM+1))
+  done | column -t
+
+  read -rp "Choose the number: " BACKUP_CHOICE
+  [[ ! "${BACKUP_CHOICE}" =~ ^[1-9]{1}[0-9]*$ ]] && { echo "Invalid choice"; exit 1; }
+  ARRAY_MAPPER=$((BACKUP_CHOICE-1))
+  [[ -z "${BACKUPS[${ARRAY_MAPPER}]}" ]] && { echo "Invalid choice"; exit 1; }
+  BACKUP_PATH="${BACKUPS[${ARRAY_MAPPER}]}"
+
+else
+  BACKUP_PATH="${BACKUPS}"
+fi
+
+echo "Selected backup: ${BACKUP_PATH}"
+
+read -rp "Do you want to proceed? [y/n]: " CHOICE
+[[ ! "${CHOICE}" =~ ^[yY](es)?$ ]] && { echo "Ok, next time"; exit 1; }
+
+BACKUP="$(awk -F/ '{print $NF}' <<<"${BACKUP_PATH}")"
+DIRNAME="$(dirname "${BACKUP_PATH}")"
+AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
+
+if [[ "${DIRNAME}" != "${AI1WM_PATH}" ]]; then
   mkdir -p "${AI1WM_PATH}"
   mv "${BACKUP_PATH}" "${AI1WM_PATH}"
+fi
 
-  run_wpcli plugin delete all-in-one-wp-migration 2>/dev/null
+if [[ -d "${PWD}/wp-content/plugins/all-in-one-wp-migration" ]]; then
+  echo "Removing original all-in-one-wp-migration plugin"
+  run_wpcli plugin delete all-in-one-wp-migration
+fi
 
-  AIOWPM_URL="https://downloads.wordpress.org/plugin/all-in-one-wp-migration.zip"
-  wget -qO "${PWD}/wp-content/plugins/ai1wm.zip" "${AIOWPM_URL}" || { echo "Не вдалося завантажити плагін"; return 1; }
-  unzip -q -o "${PWD}/wp-content/plugins/ai1wm.zip" -d "${PWD}/wp-content/plugins" || { echo "Не вдалося розпакувати плагін"; return 1; }
-  rm -f "${PWD}/wp-content/plugins/ai1wm.zip"
+echo "Downloading forked all-in-one-wp-migration plugin"
+wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Failed to download ${AIOWPM_URL}"; exit 1; }
 
-  run_wpcli plugin activate all-in-one-wp-migration
-  run_wpcli ai1wm restore "$(basename "${BACKUP_PATH}")"
-  run_wpcli plugin update all-in-one-wp-migration
+echo "Installing forked all-in-one-wp-migration plugin"
+unzip -q "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Failed to extract ${PWD}/wp-content/plugins/master.zip"; exit 1; }
+mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
+rm -f "${PWD}/wp-content/plugins/master.zip"
 
-  echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
-  run_wpcli rewrite flush --hard
+echo "Activating forked all-in-one-wp-migration plugin"
+mkdir -p "${PWD}/wp-content/ai1wm-backups"
+run_wpcli plugin activate all-in-one-wp-migration
+
+echo "Attempting to restore backup ${BACKUP_PATH}"
+run_wpcli ai1wm restore "${BACKUP}"
+
+echo "Updating all-in-one-wp-migration plugin"
+run_wpcli plugin update all-in-one-wp-migration
+
+echo "Configuring .htaccess"
+echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
+run_wpcli rewrite flush --hard
+
 }
 
 
