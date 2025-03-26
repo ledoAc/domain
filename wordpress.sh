@@ -306,34 +306,47 @@ backup_wordpress() {
 
 
  restore_wp_backup() {
+  ORANGE="\e[33m"
+  RESET="\e[0m"
 
-  [[ ! -f "${PWD}/wp-config.php" ]] && { echo "WordPress незнайдено"; return 1; }
+  [[ ! -f "${PWD}/wp-config.php" ]] && { echo "WordPress не знайдено"; return 1; }
   BACKUPS=($(find "${PWD}" -type f -name "*.wpress"))
-  [[ -z "${BACKUPS[*]}" ]] && { echo "Бекапів немає"; return 1; }
-  php -v | grep -qP 'PHP (7\.4|8\.\d)\.' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
+  [[ ${#BACKUPS[@]} -eq 0 ]] && { echo "Бекапів немає"; return 1; }
+  php -r 'exit(version_compare(PHP_VERSION, "7.4", "<") || version_compare(PHP_VERSION, "9.0", ">=") ? 1 : 0);' || { echo "Please use PHP 7.4 or 8.X"; return 1; }
 
-  [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Виберіть бекап: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
-  echo -e "${ORANGE}Виберіть бекап: ${BACKUP_PATH} ${RESET}"
+  if [[ ${#BACKUPS[@]} -gt 1 ]]; then
+    for i in "${!BACKUPS[@]}"; do echo "$((i+1))) ${BACKUPS[i]}"; done
+    read -rp "Виберіть бекап: " CHOICE
+    [[ ! "$CHOICE" =~ ^[0-9]+$ ]] || ((CHOICE < 1 || CHOICE > ${#BACKUPS[@]})) && { echo "Невірний вибір"; return 1; }
+    BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"
+  else
+    BACKUP_PATH="${BACKUPS[0]}"
+  fi
 
-  read -rp -e "Відновити? [y/n]: " CONFIRM
-  [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Скасовано"; return 1; }
+  echo -e "${ORANGE}Вибраний бекап: ${BACKUP_PATH}${RESET}"
+  echo -e "${ORANGE}Відновити? [y/n]: ${RESET}"
+  read -r CONFIRM
+  [[ ! "$CONFIRM" =~ ^[yY]$ ]] && { echo "Скасовано"; return 1; }
+
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
   mv "${BACKUP_PATH}" "${AI1WM_PATH}"
 
   run_wpcli plugin delete all-in-one-wp-migration 2>/dev/null
-  wget -qP "${PWD}/wp-content/plugins" "${AIOWPM_URL}" || { echo "Не вдалося завантажити плагін"; return 1; }
-  unzip -q -o "${PWD}/wp-content/plugins/master.zip" -d "${PWD}/wp-content/plugins" || { echo "Не вдалося розпакувати плагін"; return 1; }
-  mv "${PWD}/wp-content/plugins/All-In-One-WP-Migration-With-Import-master" "${PWD}/wp-content/plugins/all-in-one-wp-migration"
-  rm -f "${PWD}/wp-content/plugins/master.zip"
-  
+
+  AIOWPM_URL="https://downloads.wordpress.org/plugin/all-in-one-wp-migration.zip"
+  wget -qO "${PWD}/wp-content/plugins/ai1wm.zip" "${AIOWPM_URL}" || { echo "Не вдалося завантажити плагін"; return 1; }
+  unzip -q -o "${PWD}/wp-content/plugins/ai1wm.zip" -d "${PWD}/wp-content/plugins" || { echo "Не вдалося розпакувати плагін"; return 1; }
+  rm -f "${PWD}/wp-content/plugins/ai1wm.zip"
+
   run_wpcli plugin activate all-in-one-wp-migration
   run_wpcli ai1wm restore "$(basename "${BACKUP_PATH}")"
-  
   run_wpcli plugin update all-in-one-wp-migration
+
   echo -e 'apache_modules:\n  - mod_rewrite' > "${HOME}/.wp-cli/config.yml"
   run_wpcli rewrite flush --hard
 }
+
 
 plugin_deactivate(){
 
