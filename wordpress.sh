@@ -315,7 +315,7 @@ backup_wordpress() {
   [[ "${#BACKUPS[@]}" -gt 1 ]] && { echo "${BACKUPS[@]}" | nl | column -t; read -rp "Виберіть бекап: " CHOICE; BACKUP_PATH="${BACKUPS[$((CHOICE-1))]}"; } || BACKUP_PATH="${BACKUPS[0]}"
   echo -e "${ORANGE}Виберіть бекап: ${BACKUP_PATH} ${RESET}"
 
-  read -rp -e "${ORANGE}Відновити? [y/n]: ${RESET}" CONFIRM
+  read -rp -e "Відновити? [y/n]: " CONFIRM
   [[ ! "${CONFIRM}" =~ ^[yY](es)?$ ]] && { echo "Скасовано"; return 1; }
   AI1WM_PATH="${PWD}/wp-content/ai1wm-backups"
   mkdir -p "${AI1WM_PATH}"
