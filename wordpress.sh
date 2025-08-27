@@ -505,9 +505,7 @@ done
 
 }
 
-get_last_error_log
 
-check_database_errors
 user_list
 url_site
 error_config
