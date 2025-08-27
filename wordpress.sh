@@ -92,42 +92,6 @@ remove_htaccess_files() {
   fi
 }
 
-check_database_errors() {
-    log_message "${ORANGE}Перевірка помилок бази даних...${RESET}"
-
-    if command -v wp &> /dev/null; then
-        wp db check
-    else
-        log_message "${RED}WP-CLI не знайдений. Перевірка бази даних неможлива.${RESET}"
-    fi
-}
-
-echo -e "${ORANGE}Пошук файлів, які не належать Wordpress...${RESET}"
-
-cdfind=$(find . -type f \
-    -not -path "./wp-admin/*" \
-    -not -path "./wp-includes/*" \
-    -not -path "./wp-content/*" \
-    -not -name "wp-*" \
-    -not -name "index.php" \
-    -not -name "license.txt" \
-    -not -name ".htaccess" \
-    -not -name ".hcflag" \
-    -not -name "error_log" \
-    -not -name "readme.html")
-
-echo "$cdfind"
-
-echo -e "${ORANGE}Пошук файлів htaccess...${RESET}"
-
-cdhtaccess=$(find . -type f -name ".htaccess")
-
-if [ -n "$cdhtaccess" ]; then
-  echo -e "${GREEN}$cdhtaccess${RESET}"
-else
-  echo -e "${LIGHT_GREEN}Файли .htaccess не знайдено.${RESET}"
-fi
-
 create_htaccess() {
   htaccess_path="./.htaccess"
   
