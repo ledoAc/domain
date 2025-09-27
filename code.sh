@@ -907,7 +907,7 @@ else
 fi
 
 
-    ns_records=$(dig +short NS @8.8.8.8 "$domain")
+    ns_records=$(dig +short NS @1.1.1.1 "$domain")
 
     print_in_frame "Nameservers"
 
@@ -942,7 +942,7 @@ fi
         echo -e "\nUnfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet.\n"
     else
         while read -r ns; do
-            ip=$(dig +short @8.8.8.8 $ns)
+            ip=$(dig +short @1.1.1.1 $ns)
             echo -e "----- $ns ----- $ip ---- "
         done <<< "$ns_records"
     fi
@@ -950,3 +950,4 @@ fi
     echo
     echo -e "\e[96m###################################################################################################################################################\e[0m"
 fi
+
