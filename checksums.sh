@@ -67,21 +67,34 @@ echo "📊 Running core files verification..."
     echo "DETAILED FILE ANALYSIS:"
     echo "======================="
     
-    # Run verify-checksums with table format
-    wp core verify-checksums --format=table 2>&1
+    # Run verify-checksums and format as table manually
+    wp core verify-checksums 2>&1 | while IFS= read -r line; do
+        if [[ $line == *"should be"* ]]; then
+            # Extract filename and status
+            filename=$(echo "$line" | sed 's/.*File \(.*\) does not.*/\1/')
+            echo "│ $(printf '%-60s' "$filename") │ ❌ MODIFIED │"
+        elif [[ $line == *"Success:"* ]]; then
+            echo "│ $(printf '%-60s' "All files")            │ ✅ VERIFIED │"
+        elif [[ $line == *"Error:"* ]]; then
+            echo "│ $(printf '%-60s' "Verification")         │ ❌ FAILED │"
+        fi
+    done
     
     echo ""
     echo "FILE STATUS SUMMARY:"
     echo "===================="
     
     # Count different file statuses
-    TOTAL_FILES=$(wp core verify-checksums --format=count 2>/dev/null || echo "0")
-    ERROR_FILES=$(wp core verify-checksums --format=table 2>&1 | grep -c "Error" || true)
-    OK_FILES=$(wp core verify-checksums --format=table 2>&1 | grep -c "OK" || true)
-    
-    echo "Total files checked: $TOTAL_FILES"
-    echo "✅ Intact files: $OK_FILES"
-    echo "❌ Modified/Corrupted files: $ERROR_FILES"
+    CHECK_RESULT=$(wp core verify-checksums 2>&1)
+    if [[ $CHECK_RESULT == *"Success:"* ]]; then
+        echo "✅ All core files are verified and intact"
+        ERROR_FILES=0
+        OK_FILES="All"
+    else
+        ERROR_FILES=$(echo "$CHECK_RESULT" | grep -c "should be" || true)
+        echo "❌ Modified/Corrupted files: $ERROR_FILES"
+        OK_FILES="Some files modified"
+    fi
     
 } | tee "$RESULTS_FILE"
 
@@ -92,19 +105,21 @@ echo "📊 Running core files verification..."
     echo "Date: $(date)"
     echo "WordPress Version: $WP_VERSION"
     echo ""
-    echo "File Integrity Status:"
-    echo "---------------------"
+    echo "┌────────────────────────────────────────────────────────────┬─────────────┐"
+    echo "│ File                                                       │ Status      │"
+    echo "├────────────────────────────────────────────────────────────┼─────────────┤"
     
     # Get the table output
-    wp core verify-checksums --format=table 2>&1 | while IFS= read -r line; do
-        if [[ $line == *"Error"* ]]; then
-            echo "❌ $line"
-        elif [[ $line == *"OK"* ]]; then
-            echo "✅ $line"
-        else
-            echo "$line"
+    wp core verify-checksums 2>&1 | while IFS= read -r line; do
+        if [[ $line == *"should be"* ]]; then
+            filename=$(echo "$line" | sed 's/.*File \(.*\) does not.*/\1/')
+            echo "│ $(printf '%-60s' "$filename") │ ❌ MODIFIED │"
+        elif [[ $line == *"Success:"* ]]; then
+            echo "│ $(printf '%-60s' "All core files")         │ ✅ VERIFIED │"
         fi
     done
+    
+    echo "└────────────────────────────────────────────────────────────┴─────────────┘"
     
 } > "$TABLE_FILE"
 
@@ -117,8 +132,9 @@ echo "📊 Running core files verification..."
     echo "Scan Directory: $(pwd)"
     echo ""
     
-    # Get summary statistics
-    if wp core verify-checksums --quiet &>/dev/null; then
+    # Get summary
+    CHECK_RESULT=$(wp core verify-checksums 2>&1)
+    if [[ $CHECK_RESULT == *"Success:"* ]]; then
         echo "🎉 STATUS: ALL CORE FILES ARE INTACT"
         echo "✅ No modified or corrupted files found"
     else
@@ -126,32 +142,10 @@ echo "📊 Running core files verification..."
         echo "❌ Some core files have been modified or corrupted"
         echo ""
         echo "Modified files:"
-        wp core verify-checksums --format=table 2>&1 | grep "Error" | head -20
-    fi
-    
-    echo ""
-    echo "📋 Recommended actions:"
-    if wp core verify-checksums --quiet &>/dev/null; then
-        echo "✅ No action needed - core files are intact"
-    else
-        echo "1. Download fresh WordPress version $WP_VERSION"
-        echo "2. Run: wp core download --version=$WP_VERSION --force"
-        echo "3. Backup modified files before replacement"
-        echo "4. Consider security scan for malware"
+        echo "$CHECK_RESULT" | grep "should be" | head -20
     fi
     
 } > "$SUMMARY_FILE"
-
-# Display final summary
-echo ""
-echo "📁 RESULTS EXPORTED TO:"
-echo "   📄 Full report: $RESULTS_FILE"
-echo "   📊 Table format: $TABLE_FILE"
-echo "   📋 Summary: $SUMMARY_FILE"
-echo ""
-echo "🔧 QUICK FIX COMMANDS:"
-echo "   wp core download --version=$WP_VERSION --force"
-echo "   wp core verify-checksums --version=$WP_VERSION"
 
 # Check if there are errors and provide appropriate exit code
 if wp core verify-checksums --quiet &>/dev/null; then
