@@ -1,36 +1,35 @@
-#!/bin/bash
-# WordPress Core Checksums Verifier with Error Descriptions
+<?php
+WP_CLI::add_command( 'core verify-explain', function() {
 
-echo "Checking WordPress core files integrity..."
+    // Запускаємо стандартну команду
+    $result = WP_CLI::launch_self( 'core verify-checksums', [], [], false, true );
+    $output = explode("\n", $result->stdout);
 
-wp core verify-checksums 2>&1 | while IFS= read -r line; do
-    if [[ $line == *"should be"* ]]; then
-        filename=$(echo "$line" | sed 's/.*File \(.*\) does not.*/\1/')
-        echo "❌ MODIFIED: $filename"
-        
-        # Додаємо опис залежно від файлу
-        case "$filename" in
-            *"wp-config.php"*)
-                echo "   ⚠️  Critical: Main configuration file - could contain malicious code"
-                ;;
-            *"wp-admin/"*)
-                echo "   🔧 Admin area file - check for backdoors"
-                ;;
-            *"wp-includes/"*)
-                echo "   📚 Core library file - possible malware injection"
-                ;;
-            *"index.php"*)
-                echo "   🏠 Main entry point - common target for redirects"
-                ;;
-            *".htaccess"*)
-                echo "   🔐 Server configuration - check for malicious rules"
-                ;;
-            *"xmlrpc.php"*)
-                echo "   🌐 API endpoint - often abused for brute force attacks"
-                ;;
-            *)
-                echo "   🔍 Core WordPress file - verify authenticity"
-                ;;
-        esac
-    fi
-done
+    foreach ( $output as $line ) {
+
+        // Червоний — попередження
+        if (strpos($line, 'Warning: File doesn\'t verify') !== false) {
+            WP_CLI::line("\033[31m$line\033[0m");
+            WP_CLI::line("  → Цей файл не збігається з оригінальною версією WordPress. Його або змінили, або він заражений.\n");
+
+        // Червоний — зайві файли
+        } elseif (strpos($line, 'Warning: File should not exist') !== false) {
+            WP_CLI::line("\033[31m$line\033[0m");
+            WP_CLI::line("  → Цього файлу немає в офіційній збірці WordPress. Його додали сторонньо — ймовірно, шкідливий.\n");
+
+        // Червоний — загальний Error
+        } elseif (strpos($line, 'Error:') !== false) {
+            WP_CLI::line("\033[31m$line\033[0m");
+            WP_CLI::line("  → WordPress core має змінені або зайві файли — інсталяція не чиста.\n");
+
+        // Зелений — Success
+        } elseif (strpos($line, 'Success:') !== false) {
+            WP_CLI::line("\033[32m$line\033[0m");
+            WP_CLI::line("  → Усі файли WordPress збігаються з оригіналом. Зміни відсутні.\n");
+
+        // Інше — без змін
+        } else {
+            WP_CLI::line($line);
+        }
+    }
+});
