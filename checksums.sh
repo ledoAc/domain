@@ -1,42 +1,68 @@
 #!/bin/bash
 
-# --- COLORS ---
-RED="\e[31m"
-GREEN="\e[32m"
-YELLOW="\e[33m"
-RESET="\e[0m"
+# ------------------------------------------------------
+#  WordPress File Integrity + Permissions Check Script
+#  Author: ledoAc
+#  Version: 1.0
+# ------------------------------------------------------
 
-echo -e "${YELLOW}Перевіряю WordPress checksums...${RESET}"
-CHECKSUM_OUTPUT=$(wp core verify-checksums 2>&1)
+CHECKSUM_URL="https://raw.githubusercontent.com/ledoAc/domain/main/checksums"
 
-echo -e "$CHECKSUM_OUTPUT" | while read -r line; do
-    if [[ "$line" == *"doesn't verify against checksum"* ]]; then
-        echo -e "${RED}$line${RESET}"
-        echo -e "${YELLOW}Пояснення:${RESET} Файл змінено або заражено. Порівняння з оригінальним WP не співпадає."
-        echo ""
-    elif [[ "$line" == *"should not exist"* ]]; then
-        echo -e "${RED}$line${RESET}"
-        echo -e "${YELLOW}Пояснення:${RESET} Цей файл не є частиною WordPress. Ймовірно хтось додав його вручну або це наслідок зламу."
-        echo ""
-    elif [[ "$line" == *"Error:"* ]]; then
-        echo -e "${RED}$line${RESET}"
-        echo -e "${YELLOW}Пояснення:${RESET} Основні файли WordPress не відповідають оригінальним. Потрібно замінити їх на чисті."
-        echo ""
+TMP_FILE="/tmp/checksums.txt"
+
+echo "Завантаження списку хешів..."
+curl -s "$CHECKSUM_URL" -o "$TMP_FILE"
+
+if [[ ! -s "$TMP_FILE" ]]; then
+    echo "❌ Помилка: не вдалося завантажити checksums (файл порожній або не існує)."
+    exit 1
+fi
+
+echo
+echo "=============================================="
+echo " 🔍 ПЕРЕВІРКА ХЕШІВ ФАЙЛІВ (CHECKSUMS)"
+echo "=============================================="
+printf "%-60s | %-10s | %s\n" "Файл" "Статус" "Пояснення"
+printf "%.0s-" {1..100}; echo
+
+while read -r file hash; do
+    [[ -z "$file" || -z "$hash" ]] && continue
+
+    if [[ -f "$file" ]]; then
+        current_hash=$(sha256sum "$file" | awk '{print $1}')
+        if [[ "$current_hash" != "$hash" ]]; then
+            printf "%-60s | %-10s | %s\n" "$file" "BAD" "Хеш не співпадає"
+        else
+            printf "%-60s | %-10s | %s\n" "$file" "OK" ""
+        fi
     else
-        echo "$line"
+        printf "%-60s | %-10s | %s\n" "$file" "MISSING" "Файл відсутній"
     fi
-done
+done < "$TMP_FILE"
 
 
-echo -e "${YELLOW}Перевіряю права доступу на файли...${RESET}"
+echo
+echo "=============================================="
+echo " 🔍 ПЕРЕВІРКА НЕПРАВИЛЬНИХ ПРАВ ДОСТУПУ"
+echo "=============================================="
+printf "%-60s | %-10s | %-10s\n" "Файл/Папка" "Поточні" "Повинні"
+printf "%.0s-" {1..90}; echo
 
-echo ""
-echo -e "${YELLOW}Файли (має бути 644):${RESET}"
-find ./ -type f ! -perm 644 -print -exec echo -e "${RED}Невірні права${RESET}. Рекомендовано: 644" \;
+while IFS= read -r path; do
+    if [[ -f "$path" ]]; then
+        expected="644"
+    elif [[ -d "$path" ]]; then
+        expected="755"
+    else
+        continue
+    fi
 
-echo ""
-echo -e "${YELLOW}Папки (має бути 755):${RESET}"
-find ./ -type d ! -perm 755 -print -exec echo -e "${RED}Невірні права${RESET}. Рекомендовано: 755" \;
+    current=$(stat -c "%a" "$path")
 
-echo ""
-echo -e "${GREEN}Перевірка завершена.${RESET}"
+    if [[ "$current" != "$expected" ]]; then
+        printf "%-60s | %-10s | %-10s\n" "$path" "$current" "$expected"
+    fi
+done < <(find . -type f -o -type d)
+
+echo
+echo "✅ Перевірка завершена"
