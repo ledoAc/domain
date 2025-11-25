@@ -1,35 +1,68 @@
-<?php
-WP_CLI::add_command( 'core verify-explain', function() {
+#!/bin/bash
 
-    // Запускаємо стандартну команду
-    $result = WP_CLI::launch_self( 'core verify-checksums', [], [], false, true );
-    $output = explode("\n", $result->stdout);
+# ------------------------------------------------------
+#  WordPress File Integrity + Permissions Check Script
+#  Author: ledoAc
+#  Version: 1.0
+# ------------------------------------------------------
 
-    foreach ( $output as $line ) {
+CHECKSUM_URL="https://raw.githubusercontent.com/ledoAc/domain/main/checksums"
 
-        // Червоний — попередження
-        if (strpos($line, 'Warning: File doesn\'t verify') !== false) {
-            WP_CLI::line("\033[31m$line\033[0m");
-            WP_CLI::line("  → Цей файл не збігається з оригінальною версією WordPress. Його або змінили, або він заражений.\n");
+TMP_FILE="/tmp/checksums.txt"
 
-        // Червоний — зайві файли
-        } elseif (strpos($line, 'Warning: File should not exist') !== false) {
-            WP_CLI::line("\033[31m$line\033[0m");
-            WP_CLI::line("  → Цього файлу немає в офіційній збірці WordPress. Його додали сторонньо — ймовірно, шкідливий.\n");
+echo "Завантаження списку хешів..."
+curl -s "$CHECKSUM_URL" -o "$TMP_FILE"
 
-        // Червоний — загальний Error
-        } elseif (strpos($line, 'Error:') !== false) {
-            WP_CLI::line("\033[31m$line\033[0m");
-            WP_CLI::line("  → WordPress core має змінені або зайві файли — інсталяція не чиста.\n");
+if [[ ! -s "$TMP_FILE" ]]; then
+    echo "❌ Помилка: не вдалося завантажити checksums (файл порожній або не існує)."
+    exit 1
+fi
 
-        // Зелений — Success
-        } elseif (strpos($line, 'Success:') !== false) {
-            WP_CLI::line("\033[32m$line\033[0m");
-            WP_CLI::line("  → Усі файли WordPress збігаються з оригіналом. Зміни відсутні.\n");
+echo
+echo "=============================================="
+echo " 🔍 ПЕРЕВІРКА ХЕШІВ ФАЙЛІВ (CHECKSUMS)"
+echo "=============================================="
+printf "%-60s | %-10s | %s\n" "Файл" "Статус" "Пояснення"
+printf "%.0s-" {1..100}; echo
 
-        // Інше — без змін
-        } else {
-            WP_CLI::line($line);
-        }
-    }
-});
+while read -r file hash; do
+    [[ -z "$file" || -z "$hash" ]] && continue
+
+    if [[ -f "$file" ]]; then
+        current_hash=$(sha256sum "$file" | awk '{print $1}')
+        if [[ "$current_hash" != "$hash" ]]; then
+            printf "%-60s | %-10s | %s\n" "$file" "BAD" "Хеш не співпадає"
+        else
+            printf "%-60s | %-10s | %s\n" "$file" "OK" ""
+        fi
+    else
+        printf "%-60s | %-10s | %s\n" "$file" "MISSING" "Файл відсутній"
+    fi
+done < "$TMP_FILE"
+
+
+echo
+echo "=============================================="
+echo " 🔍 ПЕРЕВІРКА НЕПРАВИЛЬНИХ ПРАВ ДОСТУПУ"
+echo "=============================================="
+printf "%-60s | %-10s | %-10s\n" "Файл/Папка" "Поточні" "Повинні"
+printf "%.0s-" {1..90}; echo
+
+while IFS= read -r path; do
+    if [[ -f "$path" ]]; then
+        expected="644"
+    elif [[ -d "$path" ]]; then
+        expected="755"
+    else
+        continue
+    fi
+
+    current=$(stat -c "%a" "$path")
+
+    if [[ "$current" != "$expected" ]]; then
+        printf "%-60s | %-10s | %-10s\n" "$path" "$current" "$expected"
+    fi
+done < <(find . -type f -o -type d)
+
+echo
+echo "✅ Перевірка завершена"
