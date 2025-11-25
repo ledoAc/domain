@@ -1,13 +1,9 @@
 #!/bin/bash
 
-# ------------------------------------------------------
-#  WordPress File Integrity + Permissions Check Script
-#  Author: ledoAc
-#  Version: 1.0
-# ------------------------------------------------------
-
+# URL файлу зі списком хешів (GitHub raw)
 CHECKSUM_URL="https://raw.githubusercontent.com/ledoAc/domain/main/checksums"
 
+# Тимчасовий файл
 TMP_FILE="/tmp/checksums.txt"
 
 echo "Завантаження списку хешів..."
@@ -22,8 +18,12 @@ echo
 echo "=============================================="
 echo " 🔍 ПЕРЕВІРКА ХЕШІВ ФАЙЛІВ (CHECKSUMS)"
 echo "=============================================="
-printf "%-60s | %-10s | %s\n" "Файл" "Статус" "Пояснення"
-printf "%.0s-" {1..100}; echo
+
+# Колірні коди
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW="\e[33m"
+RESET="\e[0m"
 
 while read -r file hash; do
     [[ -z "$file" || -z "$hash" ]] && continue
@@ -31,38 +31,14 @@ while read -r file hash; do
     if [[ -f "$file" ]]; then
         current_hash=$(sha256sum "$file" | awk '{print $1}')
         if [[ "$current_hash" != "$hash" ]]; then
-            printf "%-60s | %-10s | %s\n" "$file" "BAD" "Хеш не співпадає"
+            echo -e "${RED}BAD${RESET}    $file → Хеш не співпадає"
         else
-            printf "%-60s | %-10s | %s\n" "$file" "OK" ""
+            echo -e "${GREEN}OK${RESET}     $file"
         fi
     else
-        printf "%-60s | %-10s | %s\n" "$file" "MISSING" "Файл відсутній"
+        echo -e "${RED}MISSING${RESET} $file → Файл відсутній"
     fi
 done < "$TMP_FILE"
-
-
-echo
-echo "=============================================="
-echo " 🔍 ПЕРЕВІРКА НЕПРАВИЛЬНИХ ПРАВ ДОСТУПУ"
-echo "=============================================="
-printf "%-60s | %-10s | %-10s\n" "Файл/Папка" "Поточні" "Повинні"
-printf "%.0s-" {1..90}; echo
-
-while IFS= read -r path; do
-    if [[ -f "$path" ]]; then
-        expected="644"
-    elif [[ -d "$path" ]]; then
-        expected="755"
-    else
-        continue
-    fi
-
-    current=$(stat -c "%a" "$path")
-
-    if [[ "$current" != "$expected" ]]; then
-        printf "%-60s | %-10s | %-10s\n" "$path" "$current" "$expected"
-    fi
-done < <(find . -type f -o -type d)
 
 echo
 echo "✅ Перевірка завершена"
