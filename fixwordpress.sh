@@ -18,35 +18,68 @@ NC='\033[0m' # No Color
 # Function to set correct permissions
 set_permissions() {
     local path="$1"
-    log_info "Setting permissions for: $path"
+    echo -e "${GREEN}[INFO]${NC} Setting permissions for: $path"
     
     # Directories: 755
     if find "$path" -type d -exec chmod 755 {} \; 2>/dev/null; then
-        log_info "Directory permissions: 755"
+        echo -e "${GREEN}[INFO]${NC} Directory permissions: 755"
     else
-        log_warn "Some directory permissions could not be set"
+        echo -e "${YELLOW}[WARN]${NC} Some directory permissions could not be set"
     fi
     
     # Files: 644 (не 664!)
     if find "$path" -type f -exec chmod 644 {} \; 2>/dev/null; then
-        log_info "File permissions: 644"
+        echo -e "${GREEN}[INFO]${NC} File permissions: 644"
     else
-        log_warn "Some file permissions could not be set"
+        echo -e "${YELLOW}[WARN]${NC} Some file permissions could not be set"
     fi
     
     # Special permissions for wp-config.php
     if [[ -f "$path/wp-config.php" ]]; then
         if chmod 640 "$path/wp-config.php" 2>/dev/null; then
-            log_info "wp-config.php permissions: 640"
+            echo -e "${GREEN}[INFO]${NC} wp-config.php permissions: 640"
         else
-            log_warn "Could not change wp-config.php permissions"
+            echo -e "${YELLOW}[WARN]${NC} Could not change wp-config.php permissions"
         fi
     fi
 }
 
 # Function to detect web server user
 detect_web_user() {
-    # ... (залишається без змін)
+    local detected_user=""
+    
+    # Try to detect from running processes
+    if ps aux | grep -q '[n]ginx'; then
+        if id nginx &>/dev/null; then
+            detected_user="nginx"
+        elif id www-data &>/dev/null; then
+            detected_user="www-data"
+        fi
+    elif ps aux | grep -q '[a]pache2\|[h]ttpd'; then
+        if id apache &>/dev/null; then
+            detected_user="apache"
+        elif id www-data &>/dev/null; then
+            detected_user="www-data"
+        fi
+    fi
+    
+    # If still not detected, try common users
+    if [[ -z "$detected_user" ]]; then
+        for user in www-data nginx apache httpd; do
+            if id "$user" &>/dev/null; then
+                detected_user="$user"
+                break
+            fi
+        done
+    fi
+    
+    # If no web server user found, use current user
+    if [[ -z "$detected_user" ]]; then
+        detected_user="$(whoami)"
+        echo "$detected_user (current user - no web server user detected)"
+    else
+        echo "$detected_user"
+    fi
 }
 
 # Logging functions
@@ -64,12 +97,56 @@ log_error() {
 
 # Function to check for plugin/theme updates
 check_updates() {
-    # ... (залишається без змін)
+    log_info "Checking for available updates..."
+    
+    echo -e "\n${BLUE}=== PLUGIN UPDATES ===${NC}"
+    PLUGIN_UPDATES=$(wp plugin list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep "available" || true)
+    
+    if [[ -n "$PLUGIN_UPDATES" ]]; then
+        echo "$PLUGIN_UPDATES" | while IFS= read -r line; do
+            PLUGIN_NAME=$(echo "$line" | cut -d',' -f1)
+            CURRENT_VER=$(echo "$line" | cut -d',' -f4)
+            NEW_VER=$(echo "$line" | cut -d',' -f5)
+            echo -e "${YELLOW}• $PLUGIN_NAME${NC}: $CURRENT_VER → $NEW_VER"
+        done
+        PLUGIN_COUNT=$(echo "$PLUGIN_UPDATES" | wc -l)
+        echo -e "\n${YELLOW}Found $PLUGIN_COUNT plugin(s) needing update${NC}"
+    else
+        echo -e "${GREEN}All plugins are up to date${NC}"
+    fi
+    
+    echo -e "\n${BLUE}=== THEME UPDATES ===${NC}"
+    THEME_UPDATES=$(wp theme list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep "available" || true)
+    
+    if [[ -n "$THEME_UPDATES" ]]; then
+        echo "$THEME_UPDATES" | while IFS= read -r line; do
+            THEME_NAME=$(echo "$line" | cut -d',' -f1)
+            CURRENT_VER=$(echo "$line" | cut -d',' -f4)
+            NEW_VER=$(echo "$line" | cut -d',' -f5)
+            echo -e "${YELLOW}• $THEME_NAME${NC}: $CURRENT_VER → $NEW_VER"
+        done
+        THEME_COUNT=$(echo "$THEME_UPDATES" | wc -l)
+        echo -e "\n${YELLOW}Found $THEME_COUNT theme(s) needing update${NC}"
+    else
+        echo -e "${GREEN}All themes are up to date${NC}"
+    fi
 }
 
 # Function to list all users
 list_users() {
-    # ... (залишається без змін)
+    log_info "Listing all WordPress users..."
+    
+    echo -e "\n${BLUE}=== WORDPRESS USERS ===${NC}"
+    
+    USERS_OUTPUT=$(wp user list --fields=ID,user_login,display_name,user_email,roles --allow-root 2>/dev/null || true)
+    
+    if [[ -n "$USERS_OUTPUT" ]]; then
+        echo "ID | Username | Display Name | Email | Role"
+        echo "---|----------|--------------|-------|------"
+        echo "$USERS_OUTPUT" | tail -n +2
+    else
+        log_warn "Could not retrieve user list"
+    fi
 }
 
 # Help function
@@ -95,10 +172,97 @@ EOF
 }
 
 # Parse arguments
-# ... (залишається без змін)
+FIX_PERMISSIONS=true
+VERBOSE=false
+WP_PATH=""
+CUSTOM_USER=""
+CUSTOM_GROUP=""
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            ;;
+        -u=*|--user=*)
+            CUSTOM_USER="${1#*=}"
+            shift
+            ;;
+        -g=*|--group=*)
+            CUSTOM_GROUP="${1#*=}"
+            shift
+            ;;
+        -s|--skip-permissions)
+            FIX_PERMISSIONS=false
+            shift
+            ;;
+        -v|--verbose)
+            VERBOSE=true
+            shift
+            ;;
+        -*)
+            log_error "Unknown option: $1"
+            show_help
+            ;;
+        *)
+            WP_PATH="$1"
+            shift
+            ;;
+    esac
+done
+
+# Auto-detect web user if not specified
+if [[ -n "$CUSTOM_USER" ]]; then
+    WP_USER="$CUSTOM_USER"
+else
+    WP_USER=$(detect_web_user)
+fi
+
+if [[ -n "$CUSTOM_GROUP" ]]; then
+    WP_GROUP="$CUSTOM_GROUP"
+else
+    WP_GROUP="$WP_USER"
+fi
+
+# Set default path if not provided
+WP_PATH="${WP_PATH:-$(pwd)}"
+WP_PATH="${WP_PATH%/}"
+
+log_info "Starting WordPress repair process..."
+log_info "WordPress path: $WP_PATH"
+log_info "Using user: $WP_USER"
+log_info "Using group: $WP_GROUP"
 
 # -------------------------
-# 2. Fix permissions (optional) - ВИПРАВЛЕНО
+# 1. Validate environment
+# -------------------------
+if [[ ! -d "$WP_PATH" ]]; then
+    log_error "Directory does not exist: $WP_PATH"
+    exit 1
+fi
+
+if ! command -v wp &> /dev/null; then
+    log_error "WP-CLI is not installed or not in PATH"
+    log_info "Install with: curl -O https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar"
+    exit 1
+fi
+
+cd "$WP_PATH" || {
+    log_error "Cannot enter directory: $WP_PATH"
+    exit 1
+}
+
+# Check if this is a WordPress directory
+if [[ ! -f "wp-config.php" ]]; then
+    log_warn "wp-config.php not found. Is this a WordPress directory?"
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        exit 1
+    fi
+fi
+
+# -------------------------
+# 2. Fix permissions (optional)
 # -------------------------
 if [[ "$FIX_PERMISSIONS" == true ]]; then
     log_info "Fixing permissions..."
@@ -138,15 +302,39 @@ fi
 # -------------------------
 # 3. Detect WP version
 # -------------------------
-# ... (залишається без змін)
+log_info "Detecting WordPress version..."
+WP_VERSION=$(wp core version --allow-root 2>/dev/null || true)
+
+if [[ -z "$WP_VERSION" ]]; then
+    log_error "Cannot detect WP version via WP-CLI"
+    log_info "Trying alternative method..."
+    
+    if [[ -f "wp-includes/version.php" ]]; then
+        WP_VERSION=$(grep "^\$wp_version" wp-includes/version.php | cut -d"'" -f2)
+    fi
+    
+    if [[ -z "$WP_VERSION" ]]; then
+        log_error "Could not detect WordPress version"
+        exit 1
+    fi
+fi
+
+log_info "Detected WP version: $WP_VERSION"
 
 # -------------------------
 # 4. Backup wp-content and wp-config
 # -------------------------
-# ... (залишається без змін)
+BACKUP_DIR="/tmp/wp-backup-$(date +%Y%m%d-%H%M%S)"
+log_info "Creating backup in: $BACKUP_DIR"
+
+mkdir -p "$BACKUP_DIR"
+cp -a wp-config.php "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-config.php"
+[[ -d "wp-content" ]] && cp -a wp-content "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-content"
+
+log_info "Backup created at: $BACKUP_DIR"
 
 # -------------------------
-# 5. Download clean core - ВИПРАВЛЕНО
+# 5. Download clean core
 # -------------------------
 log_info "Downloading clean core files for version $WP_VERSION..."
 
@@ -207,7 +395,28 @@ log_info "Core files updated to clean version"
 # -------------------------
 # 6. Verify and clean up
 # -------------------------
-# ... (залишається без змін)
+log_info "Verifying WordPress core integrity..."
+
+if wp core verify-checksums --allow-root 2>/dev/null; then
+    log_info "✓ WordPress core verified successfully"
+else
+    log_warn "WordPress verification reported issues"
+    log_info "Running additional cleanup..."
+    
+    for dir in wp-admin wp-includes; do
+        if [[ -d "$dir" ]]; then
+            SUSPICIOUS_FILES=$(find "$dir" -name "*.php" -type f ! -path "*/includes/*" ! -path "*/admin/*" \
+                -exec grep -l "eval\|base64_decode\|gzinflate" {} \; 2>/dev/null || true)
+            
+            if [[ -n "$SUSPICIOUS_FILES" ]]; then
+                echo "$SUSPICIOUS_FILES" | while read -r suspicious; do
+                    log_warn "Removing suspicious file: $suspicious"
+                    rm -f "$suspicious"
+                done
+            fi
+        fi
+    done
+fi
 
 # -------------------------
 # 7. Run additional checks
@@ -216,7 +425,7 @@ check_updates
 list_users
 
 # -------------------------
-# 8. Final permissions check - НОВИЙ РОЗДІЛ
+# 8. Final permissions check
 # -------------------------
 if [[ "$FIX_PERMISSIONS" == true ]]; then
     log_info "Final permissions verification..."
