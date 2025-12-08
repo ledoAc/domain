@@ -44,42 +44,24 @@ set_permissions() {
     fi
 }
 
-# Function to detect web server user
+# Function to detect web server user (спрощена версія)
 detect_web_user() {
     local detected_user=""
     
-    # Try to detect from running processes
-    if ps aux | grep -q '[n]ginx'; then
-        if id nginx &>/dev/null; then
-            detected_user="nginx"
-        elif id www-data &>/dev/null; then
-            detected_user="www-data"
+    # Try common web server users
+    for user in www-data nginx apache httpd; do
+        if id "$user" &>/dev/null; then
+            detected_user="$user"
+            break
         fi
-    elif ps aux | grep -q '[a]pache2\|[h]ttpd'; then
-        if id apache &>/dev/null; then
-            detected_user="apache"
-        elif id www-data &>/dev/null; then
-            detected_user="www-data"
-        fi
-    fi
-    
-    # If still not detected, try common users
-    if [[ -z "$detected_user" ]]; then
-        for user in www-data nginx apache httpd; do
-            if id "$user" &>/dev/null; then
-                detected_user="$user"
-                break
-            fi
-        done
-    fi
+    done
     
     # If no web server user found, use current user
     if [[ -z "$detected_user" ]]; then
         detected_user="$(whoami)"
-        echo "$detected_user (current user - no web server user detected)"
-    else
-        echo "$detected_user"
     fi
+    
+    echo "$detected_user"
 }
 
 # Logging functions
@@ -262,14 +244,14 @@ if [[ ! -f "wp-config.php" ]]; then
 fi
 
 # -------------------------
-# 2. Fix permissions (optional)
+# 2. Fix permissions (optional) - ВИПРАВЛЕНО!
 # -------------------------
 if [[ "$FIX_PERMISSIONS" == true ]]; then
     log_info "Fixing permissions..."
     
-    # Skip ownership change if user is current user or doesn't exist
+    # Логіка зміни власності - ВИПРАВЛЕНО
     if [[ "$WP_USER" == "$(whoami)" ]]; then
-        log_info "User is current user, skipping ownership change"
+        log_info "User is current user ($WP_USER), skipping ownership change"
         SKIP_OWNER=true
     elif ! id "$WP_USER" &>/dev/null; then
         log_warn "User '$WP_USER' does not exist. Skipping ownership change."
@@ -322,14 +304,26 @@ fi
 log_info "Detected WP version: $WP_VERSION"
 
 # -------------------------
-# 4. Backup wp-content and wp-config
+# 4. Backup wp-content and wp-config - ВИПРАВЛЕНО!
 # -------------------------
-BACKUP_DIR="/tmp/wp-backup-$(date +%Y%m%d-%H%M%S)"
+# Бекап в поточній директорії
+BACKUP_DIR="$WP_PATH/wp-backup-$(date +%Y%m%d-%H%M%S)"
 log_info "Creating backup in: $BACKUP_DIR"
 
 mkdir -p "$BACKUP_DIR"
-cp -a wp-config.php "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-config.php"
-[[ -d "wp-content" ]] && cp -a wp-content "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-content"
+if cp -a wp-config.php "$BACKUP_DIR/" 2>/dev/null; then
+    log_info "wp-config.php backed up"
+else
+    log_warn "Could not backup wp-config.php"
+fi
+
+if [[ -d "wp-content" ]]; then
+    if cp -a wp-content "$BACKUP_DIR/" 2>/dev/null; then
+        log_info "wp-content backed up"
+    else
+        log_warn "Could not backup wp-content"
+    fi
+fi
 
 log_info "Backup created at: $BACKUP_DIR"
 
@@ -352,7 +346,7 @@ if [[ ! -f "$CACHE_FILE" ]] || [[ "$VERBOSE" == true ]]; then
         --allow-root \
         --quiet="$([[ "$VERBOSE" != true ]] && echo "--quiet")"
     
-    # ВАЖЛИВО: встановлюємо правильні права перед запаковуванням в кеш
+    # Встановлюємо правильні права перед запаковуванням в кеш
     log_info "Setting correct permissions for downloaded files..."
     find "/tmp/wordpress-$WP_VERSION" -type d -exec chmod 755 {} \; 2>/dev/null
     find "/tmp/wordpress-$WP_VERSION" -type f -exec chmod 644 {} \; 2>/dev/null
@@ -365,7 +359,7 @@ log_info "Extracting core files..."
 if unzip -q -o "$CACHE_FILE" -d "$WP_PATH" 2>/dev/null; then
     log_info "Core files extracted"
     
-    # ВАЖЛИВО: встановлюємо права після розпаковки
+    # Встановлюємо права після розпаковки
     if [[ "$FIX_PERMISSIONS" == true ]]; then
         log_info "Setting permissions for extracted core files..."
         set_permissions "$WP_PATH"
@@ -377,14 +371,27 @@ fi
 
 # Restore wp-content and wp-config
 log_info "Restoring wp-content and configuration..."
-[[ -d "$BACKUP_DIR/wp-content" ]] && cp -a "$BACKUP_DIR/wp-content/." "wp-content/" 2>/dev/null || log_warn "Could not restore wp-content"
-[[ -f "$BACKUP_DIR/wp-config.php" ]] && cp -f "$BACKUP_DIR/wp-config.php" . 2>/dev/null || log_warn "Could not restore wp-config.php"
+if [[ -d "$BACKUP_DIR/wp-content" ]]; then
+    if cp -a "$BACKUP_DIR/wp-content/." "wp-content/" 2>/dev/null; then
+        log_info "wp-content restored"
+    else
+        log_warn "Could not restore wp-content"
+    fi
+fi
 
-# ВАЖЛИВО: встановлюємо права для відновлених файлів
+if [[ -f "$BACKUP_DIR/wp-config.php" ]]; then
+    if cp -f "$BACKUP_DIR/wp-config.php" . 2>/dev/null; then
+        log_info "wp-config.php restored"
+    else
+        log_warn "Could not restore wp-config.php"
+    fi
+fi
+
+# Встановлюємо права для відновлених файлів
 if [[ "$FIX_PERMISSIONS" == true ]]; then
     log_info "Setting permissions for restored files..."
     # Права для wp-config.php
-    [[ -f "wp-config.php" ]] && chmod 640 wp-config.php 2>/dev/null
+    [[ -f "wp-config.php" ]] && chmod 640 wp-config.php 2>/dev/null && log_info "wp-config.php permissions set to 640"
     
     # Права для вмісту wp-content
     [[ -d "wp-content" ]] && set_permissions "wp-content"
@@ -447,10 +454,12 @@ if [[ "$FIX_PERMISSIONS" == true ]]; then
 fi
 
 # -------------------------
-# 9. Final cleanup
+# 9. Final cleanup - ВИПРАВЛЕНО!
 # -------------------------
-log_info "Cleaning up temporary files..."
-rm -rf "$BACKUP_DIR" 2>/dev/null || true
+log_info "Cleaning up..."
+log_info "Backup remains at: $BACKUP_DIR"
+log_info "You can remove it manually when sure everything is OK:"
+log_info "  rm -rf $BACKUP_DIR"
 
 log_info "========================================"
 log_info "WordPress repair completed successfully!"
@@ -474,6 +483,7 @@ Summary:
 - Version: $WP_VERSION
 - Permissions fixed: $FIX_PERMISSIONS
 - Web user: $WP_USER:$WP_GROUP
+- Backup location: $BACKUP_DIR
 
 Recommended next steps:
 1. Clear browser cache
@@ -483,6 +493,7 @@ Recommended next steps:
 5. Change all administrative passwords
 6. Enable regular backups
 7. Check .htaccess for suspicious code
+8. Remove backup when verified: rm -rf $BACKUP_DIR
 
 EOF
 
