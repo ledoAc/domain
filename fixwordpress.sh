@@ -7,10 +7,10 @@
 
 set -euo pipefail  # Strict mode
 
-# Colors for output
+# Colors for output (простіші коди)
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YELLOW='\033[0;33m'
 BLUE='\033[0;34m'
 CYAN='\033[0;36m'
 NC='\033[0m' # No Color
@@ -39,10 +39,11 @@ check_updates() {
     log_info "Checking for available updates..."
     
     echo -e "\n${BLUE}=== PLUGIN UPDATES ===${NC}"
-    PLUGIN_UPDATES=$(wp plugin list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep -v ",none," | grep ",available," || true)
+    PLUGIN_UPDATES=$(wp plugin list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep "available" || true)
     
     if [[ -n "$PLUGIN_UPDATES" ]]; then
         echo "$PLUGIN_UPDATES" | while IFS= read -r line; do
+            # Розбираємо CSV рядок
             PLUGIN_NAME=$(echo "$line" | cut -d',' -f1)
             CURRENT_VER=$(echo "$line" | cut -d',' -f4)
             NEW_VER=$(echo "$line" | cut -d',' -f5)
@@ -55,7 +56,7 @@ check_updates() {
     fi
     
     echo -e "\n${BLUE}=== THEME UPDATES ===${NC}"
-    THEME_UPDATES=$(wp theme list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep -v ",none," | grep ",available," || true)
+    THEME_UPDATES=$(wp theme list --fields=name,status,update,version,update_version --allow-root --format=csv 2>/dev/null | grep "available" || true)
     
     if [[ -n "$THEME_UPDATES" ]]; then
         echo "$THEME_UPDATES" | while IFS= read -r line; do
@@ -76,13 +77,23 @@ list_users() {
     log_info "Listing all WordPress users..."
     
     echo -e "\n${BLUE}=== WORDPRESS USERS ===${NC}"
-    wp user list --fields=ID,user_login,display_name,user_email,user_registered,roles --allow-root --format=table 2>/dev/null || {
-        log_warn "Could not retrieve user list"
-    }
     
-    # Count admin users
-    ADMIN_COUNT=$(wp user list --role=administrator --format=count --allow-root 2>/dev/null || echo "0")
-    echo -e "\n${YELLOW}Administrators: $ADMIN_COUNT user(s)${NC}"
+    # Використовуємо текстовий формат для кращої читабельності
+    USERS_OUTPUT=$(wp user list --fields=ID,user_login,display_name,user_email,roles --allow-root 2>/dev/null || true)
+    
+    if [[ -n "$USERS_OUTPUT" ]]; then
+        echo "ID | Username | Display Name | Email | Role"
+        echo "---|----------|--------------|-------|------"
+        echo "$USERS_OUTPUT" | tail -n +2 | while IFS= read -r line; do
+            echo "$line"
+        done
+        
+        # Count admin users
+        ADMIN_COUNT=$(wp user list --role=administrator --format=count --allow-root 2>/dev/null || echo "0")
+        echo -e "\n${YELLOW}Administrators: $ADMIN_COUNT user(s)${NC}"
+    else
+        log_warn "Could not retrieve user list"
+    fi
 }
 
 # Help function
@@ -189,36 +200,51 @@ fi
 if [[ "$FIX_PERMISSIONS" == true ]]; then
     log_info "Fixing permissions..."
     
-    # Check if user/group exists
-    if ! getent passwd "$WP_USER" > /dev/null; then
+    # Check if user/group exists (правильна перевірка)
+    if ! id -u "$WP_USER" &>/dev/null; then
         log_warn "User '$WP_USER' does not exist. Skipping ownership change."
-    elif ! getent group "$WP_GROUP" > /dev/null; then
+        SKIP_OWNER=true
+    elif ! getent group "$WP_GROUP" &>/dev/null; then
         log_warn "Group '$WP_GROUP' does not exist. Skipping ownership change."
+        SKIP_OWNER=true
     else
+        SKIP_OWNER=false
+    fi
+    
+    if [[ "$SKIP_OWNER" == false ]]; then
         # Change ownership
-        if sudo -n true 2>/dev/null; then
+        if command -v sudo &>/dev/null && sudo -n true 2>/dev/null; then
             sudo chown -R "$WP_USER:$WP_GROUP" "$WP_PATH"
             log_info "Changed ownership to $WP_USER:$WP_GROUP"
         else
             log_warn "sudo access required for ownership change"
-            log_info "Running: chown -R $WP_USER:$WP_GROUP $WP_PATH"
+            log_info "Trying to change ownership without sudo..."
             chown -R "$WP_USER:$WP_GROUP" "$WP_PATH" 2>/dev/null || \
                 log_warn "Could not change ownership (permissions denied)"
         fi
     fi
     
-    # Set directory permissions
-    find "$WP_PATH" -type d -exec chmod 755 {} \; 2>/dev/null || \
+    # Set directory permissions (без sudo)
+    if find "$WP_PATH" -type d -exec chmod 755 {} \; 2>/dev/null; then
+        log_debug "Directory permissions set to 755"
+    else
         log_warn "Some directory permissions could not be set"
+    fi
     
-    # Set file permissions
-    find "$WP_PATH" -type f -exec chmod 644 {} \; 2>/dev/null || \
+    # Set file permissions (без sudo)
+    if find "$WP_PATH" -type f -exec chmod 644 {} \; 2>/dev/null; then
+        log_debug "File permissions set to 644"
+    else
         log_warn "Some file permissions could not be set"
+    fi
     
     # Special permissions for wp-config.php
     if [[ -f "wp-config.php" ]]; then
-        chmod 640 wp-config.php 2>/dev/null && \
-            log_info "Set secure permissions for wp-config.php"
+        if chmod 640 wp-config.php 2>/dev/null; then
+            log_info "Set secure permissions for wp-config.php (640)"
+        else
+            log_warn "Could not change wp-config.php permissions"
+        fi
     fi
     
     log_info "Permissions fixed"
@@ -231,7 +257,7 @@ log_info "Detecting WordPress version..."
 WP_VERSION=$(wp core version --allow-root 2>/dev/null || true)
 
 if [[ -z "$WP_VERSION" ]]; then
-    log_error "Cannot detect WP version"
+    log_error "Cannot detect WP version via WP-CLI"
     log_info "Trying alternative method..."
     
     # Try reading version from version.php
@@ -254,10 +280,10 @@ BACKUP_DIR="/tmp/wp-backup-$(date +%Y%m%d-%H%M%S)"
 log_info "Creating backup in: $BACKUP_DIR"
 
 mkdir -p "$BACKUP_DIR"
-cp -a wp-config.php "$BACKUP_DIR/" 2>/dev/null || true
-[[ -d "wp-content" ]] && cp -a wp-content "$BACKUP_DIR/" 2>/dev/null || true
+cp -a wp-config.php "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-config.php"
+[[ -d "wp-content" ]] && cp -a wp-content "$BACKUP_DIR/" 2>/dev/null || log_warn "Could not backup wp-content"
 
-log_info "Backup created"
+log_info "Backup created at: $BACKUP_DIR"
 
 # -------------------------
 # 5. Download clean core
@@ -282,19 +308,22 @@ if [[ ! -f "$CACHE_FILE" ]] || [[ "$VERBOSE" == true ]]; then
     # Cache the download
     cd "/tmp/wordpress-$WP_VERSION" && zip -qr "$CACHE_FILE" . && cd - >/dev/null
     rm -rf "/tmp/wordpress-$WP_VERSION"
+    log_debug "WordPress downloaded and cached"
 fi
 
 # Extract from cache
 log_info "Extracting core files..."
-unzip -q -o "$CACHE_FILE" -d "$WP_PATH" 2>/dev/null || {
+if unzip -q -o "$CACHE_FILE" -d "$WP_PATH" 2>/dev/null; then
+    log_debug "Core files extracted successfully"
+else
     log_error "Failed to extract core files"
     exit 1
-}
+fi
 
 # Restore wp-content and wp-config
 log_info "Restoring wp-content and configuration..."
-[[ -d "$BACKUP_DIR/wp-content" ]] && rsync -a "$BACKUP_DIR/wp-content/" "wp-content/" 2>/dev/null || true
-[[ -f "$BACKUP_DIR/wp-config.php" ]] && cp -f "$BACKUP_DIR/wp-config.php" . 2>/dev/null || true
+[[ -d "$BACKUP_DIR/wp-content" ]] && cp -a "$BACKUP_DIR/wp-content/." "wp-content/" 2>/dev/null || log_warn "Could not restore wp-content"
+[[ -f "$BACKUP_DIR/wp-config.php" ]] && cp -f "$BACKUP_DIR/wp-config.php" . 2>/dev/null || log_warn "Could not restore wp-config.php"
 
 log_info "Core files updated to clean version"
 
@@ -313,12 +342,15 @@ else
     for dir in wp-admin wp-includes; do
         if [[ -d "$dir" ]]; then
             # Find files that shouldn't be there (PHP files uploaded by hackers)
-            find "$dir" -name "*.php" -type f ! -path "*/includes/*" ! -path "*/admin/*" \
-                -exec grep -l "eval\|base64_decode\|gzinflate" {} \; 2>/dev/null | \
-                while read -r suspicious; do
+            SUSPICIOUS_FILES=$(find "$dir" -name "*.php" -type f ! -path "*/includes/*" ! -path "*/admin/*" \
+                -exec grep -l "eval\|base64_decode\|gzinflate" {} \; 2>/dev/null || true)
+            
+            if [[ -n "$SUSPICIOUS_FILES" ]]; then
+                echo "$SUSPICIOUS_FILES" | while read -r suspicious; do
                     log_warn "Found suspicious file: $suspicious"
                     [[ "$VERBOSE" == true ]] && rm -v "$suspicious" || rm "$suspicious"
                 done
+            fi
         fi
     done
 fi
@@ -337,7 +369,10 @@ list_users
 # 8. Final cleanup
 # -------------------------
 log_info "Cleaning up temporary files..."
-rm -rf "$BACKUP_DIR"
+if [[ -d "$BACKUP_DIR" ]]; then
+    rm -rf "$BACKUP_DIR"
+    log_debug "Backup directory removed"
+fi
 
 log_info "========================================"
 log_info "WordPress repair completed successfully!"
@@ -352,6 +387,7 @@ SECURITY_PLUGINS=(
     "MalCare Security"
 )
 
+# Вибираємо випадковий плагін
 RANDOM_PLUGIN=${SECURITY_PLUGINS[$RANDOM % ${#SECURITY_PLUGINS[@]}]}
 
 cat << EOF
