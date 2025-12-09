@@ -25,8 +25,8 @@ echo "==============================="
 i=1
 declare -a WP_DOMAINS
 for SITE in "${WP_SITES[@]}"; do
-    # Try to get domain from WP-CLI
-    DOMAIN=$(wp option get siteurl --path="$SITE" 2>/dev/null)
+    # Get domain directly from database via WP-CLI
+    DOMAIN=$(wp option get siteurl --path="$SITE" --allow-root --skip-plugins --skip-themes 2>/dev/null)
     DOMAIN=${DOMAIN#*://}
     DOMAIN=${DOMAIN:-"UNKNOWN_DOMAIN"}
     WP_DOMAINS+=("$DOMAIN")
@@ -51,12 +51,6 @@ echo "[INFO] Selected WordPress directory: $WP_PATH"
 echo "[INFO] Domain: $WP_DOMAIN"
 echo
 
-# cd into the selected directory
-cd "$WP_PATH" || {
-    echo "[ERROR] Cannot enter directory $WP_PATH."
-    exit 1
-}
-
 # ==================================================
 #  STEP 1 — Fix permissions (before repair)
 # ==================================================
@@ -71,11 +65,10 @@ fi
 
 echo "[OK] Initial permissions fixed."
 
-
 # ==================================================
 #  STEP 2 — Detect WP version via WP-CLI
 # ==================================================
-WP_VERSION=$(wp core version --allow-root)
+WP_VERSION=$(wp core version --path="$WP_PATH" --allow-root --skip-plugins --skip-themes)
 
 if [[ -z "$WP_VERSION" ]]; then
     echo "[ERROR] Cannot detect WordPress version. Is WP-CLI working?"
@@ -84,30 +77,33 @@ fi
 
 echo "[INFO] Detected WP version: $WP_VERSION"
 
-
 # ==================================================
 #  STEP 3 — Download clean WordPress core
 # ==================================================
 echo "[INFO] Downloading clean WordPress core $WP_VERSION..."
 
+# Use custom cache folder in the site directory to avoid global .cli
+export WP_CLI_CACHE_DIR="$WP_PATH/.wp-cli-cache"
+
 wp core download \
     --version="$WP_VERSION" \
     --force \
     --skip-content \
-    --allow-root
+    --allow-root \
+    --skip-plugins \
+    --skip-themes \
+    --path="$WP_PATH"
 
 echo "[OK] Core files replaced with clean version."
-
 
 # ==================================================
 #  STEP 4 — Verify core integrity
 # ==================================================
 echo "[INFO] Verifying WordPress core checksums..."
 
-wp core verify-checksums --allow-root
+wp core verify-checksums --path="$WP_PATH" --allow-root --skip-plugins --skip-themes
 
 echo "[OK] Core integrity verified."
-
 
 # ==================================================
 #  STEP 5 — Fix permissions (after repair)
