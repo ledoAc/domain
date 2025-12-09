@@ -6,7 +6,7 @@
 
 LOG_DIR="$HOME/logs"   # зміни на свій каталог логів
 ATTACK_LOG="$HOME/wp_attacks.log"
-MIN_REQ=20             # мінімальна кількість запитів для виводу
+MIN_REQ=200             # мінімальна кількість запитів для виводу
 
 # Підозрілі патерни
 PATTERNS="wp-login.php|xmlrpc.php|wp-content|wp-includes|plugins|themes|\.php|\.tmb|uploads|maintenance"
