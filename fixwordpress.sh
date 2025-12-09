@@ -116,6 +116,16 @@ find "$WP_PATH" -type f -exec chmod 644 {} \;
 if id "www-data" &>/dev/null; then
     chown -R www-data:www-data "$WP_PATH"
 fi
+# ==================================================
+#  STEP 6 — Clean WP-CLI cache
+# ==================================================
+CACHE_DIR="$WP_PATH/.wp-cli-cache"
+
+if [[ -d "$CACHE_DIR" ]]; then
+    echo "[INFO] Removing WP-CLI cache directory: $CACHE_DIR"
+    rm -rf "$CACHE_DIR"
+    echo "[OK] WP-CLI cache removed."
+fi
 
 echo
 echo "[DONE] WordPress core repaired, verified and permissions fixed."
