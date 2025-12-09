@@ -1,7 +1,6 @@
 #!/bin/bash
-# wp_smtp_info.sh
-# Виводить налаштування SMTP WordPress у форматованому вигляді
-# Запускається з кореневої папки WordPress
+# wp_smtp_info_njq.sh
+# Виводить ключові налаштування SMTP WordPress без jq
 
 # Перевірка наявності wp-cli
 if ! command -v wp &>/dev/null; then
@@ -9,7 +8,7 @@ if ! command -v wp &>/dev/null; then
     exit 1
 fi
 
-# Отримуємо дані SMTP у форматі JSON
+# Отримуємо JSON
 SMTP_JSON=$(wp option get wp_mail_smtp --format=json)
 
 if [ -z "$SMTP_JSON" ]; then
@@ -17,22 +16,22 @@ if [ -z "$SMTP_JSON" ]; then
     exit 0
 fi
 
-# Використовуємо jq для форматованого виводу (якщо немає jq, можна встановити)
-if ! command -v jq &>/dev/null; then
-    echo "⚠️ Рекомендовано встановити jq для форматованого виводу"
-    echo "Сирові дані JSON:"
-    echo "$SMTP_JSON"
-    exit 0
-fi
+# --- Витягаємо ключові поля ---
+FROM_EMAIL=$(echo "$SMTP_JSON" | grep -o '"from_email":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
+FROM_NAME=$(echo "$SMTP_JSON" | grep -o '"from_name":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
+SMTP_HOST=$(echo "$SMTP_JSON" | grep -o '"host":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
+SMTP_PORT=$(echo "$SMTP_JSON" | grep -o '"port":[0-9]*' | head -1 | cut -d':' -f2)
+SMTP_ENC=$(echo "$SMTP_JSON" | grep -o '"encryption":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
+SMTP_USER=$(echo "$SMTP_JSON" | grep -o '"user":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
 
-# Виводимо ключові налаштування
+# --- Вивід ---
 echo "======================================"
 echo "🔹 Налаштування SMTP WordPress"
 echo "======================================"
-echo "SMTP сервер:       $(echo "$SMTP_JSON" | jq -r '.mailer.smtp.host // "не задано")')"
-echo "SMTP порт:         $(echo "$SMTP_JSON" | jq -r '.mailer.smtp.port // "не задано")')"
-echo "Шифрування:        $(echo "$SMTP_JSON" | jq -r '.mailer.smtp.encryption // "не задано")')"
-echo "Логін (username):  $(echo "$SMTP_JSON" | jq -r '.mailer.smtp.username // "не задано")')"
-echo "Email відправника: $(echo "$SMTP_JSON" | jq -r '.from_email // "не задано")')"
-echo "Ім'я відправника:  $(echo "$SMTP_JSON" | jq -r '.from_name // "не задано")')"
+echo "SMTP сервер:       $SMTP_HOST"
+echo "SMTP порт:         $SMTP_PORT"
+echo "Шифрування:        $SMTP_ENC"
+echo "Логін (username):  $SMTP_USER"
+echo "Email відправника: $FROM_EMAIL"
+echo "Ім'я відправника:  $FROM_NAME"
 echo "======================================"
