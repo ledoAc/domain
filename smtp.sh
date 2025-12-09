@@ -23,6 +23,7 @@ SMTP_HOST=$(echo "$SMTP_JSON" | grep -o '"host":"[^"]*"' | head -1 | cut -d':' -
 SMTP_PORT=$(echo "$SMTP_JSON" | grep -o '"port":[0-9]*' | head -1 | cut -d':' -f2)
 SMTP_ENC=$(echo "$SMTP_JSON" | grep -o '"encryption":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
 SMTP_USER=$(echo "$SMTP_JSON" | grep -o '"user":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
+SMTP_PASS=$(echo "$SMTP_JSON" | grep -o '"pass":"[^"]*"' | head -1 | cut -d':' -f2 | tr -d '"')
 
 # --- Вивід ---
 echo "======================================"
@@ -34,4 +35,5 @@ echo "Шифрування:        $SMTP_ENC"
 echo "Логін (username):  $SMTP_USER"
 echo "Email відправника: $FROM_EMAIL"
 echo "Ім'я відправника:  $FROM_NAME"
+echo "Пароль:  $SMTP_PASS"
 echo "======================================"
