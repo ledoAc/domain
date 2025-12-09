@@ -1,14 +1,19 @@
 #!/bin/bash
 
-# =============================
-#   AUTO-DETECT WORDPRESS + FIX
-# =============================
+# ==================================================
+#  Auto-detect WordPress + Repair Core via WP-CLI
+# ==================================================
 
 echo "[INFO] Searching for WordPress installations..."
 
-# Знаходимо всі wp-includes/version.php (ознака WP)
-mapfile -t WP_SITES < <(find . -type f -path "*/wp-includes/version.php" | sed 's|/wp-includes/version.php||')
+# Find all WP installations — absolute paths + silent errors
+mapfile -t WP_SITES < <(
+    find . -type f -path "*/wp-includes/version.php" 2>/dev/null \
+    | sed 's|/wp-includes/version.php||' \
+    | xargs -I{} realpath {}
+)
 
+# Check if found any
 if [[ ${#WP_SITES[@]} -eq 0 ]]; then
     echo "[ERROR] No WordPress installations found."
     exit 1
@@ -25,28 +30,28 @@ done
 echo "==============================="
 echo
 
-# Вибір папки
-read -p "Select the number of the WordPress installation to repair: " SELECTED
+# Ask user to choose installation
+read -p "Select the number of installation to repair: " SELECTED
 
 if ! [[ "$SELECTED" =~ ^[0-9]+$ ]] || (( SELECTED < 1 || SELECTED > ${#WP_SITES[@]} )); then
     echo "[ERROR] Invalid selection."
     exit 1
 fi
 
+# Selected path
 WP_PATH="${WP_SITES[$((SELECTED-1))]}"
-echo "[INFO] Selected: $WP_PATH"
+echo "[INFO] Selected WordPress directory: $WP_PATH"
 echo
 
-# Переходимо в WP директорію
+# cd into the selected directory
 cd "$WP_PATH" || {
-    echo "[ERROR] Cannot enter selected directory."
+    echo "[ERROR] Cannot enter directory $WP_PATH."
     exit 1
 }
 
-# =============================
-#   ORIGINAL FIX SCRIPT BELOW
-# =============================
-
+# ==================================================
+#  STEP 1 — Fix permissions (before repair)
+# ==================================================
 echo "[INFO] Fixing initial permissions..."
 
 find "$WP_PATH" -type d -exec chmod 755 {} \;
@@ -58,28 +63,48 @@ fi
 
 echo "[OK] Initial permissions fixed."
 
-# Detect version
+
+# ==================================================
+#  STEP 2 — Detect WP version via WP-CLI
+# ==================================================
 WP_VERSION=$(wp core version --allow-root)
 
 if [[ -z "$WP_VERSION" ]]; then
-    echo "[ERROR] Cannot detect WP version. Is wp-cli installed?"
+    echo "[ERROR] Cannot detect WordPress version. Is WP-CLI working?"
     exit 1
 fi
 
-echo "[INFO] Detected WordPress version: $WP_VERSION"
+echo "[INFO] Detected WP version: $WP_VERSION"
 
-# Download clean core
-echo "[INFO] Downloading clean core $WP_VERSION..."
-wp core download --version="$WP_VERSION" --force --skip-content --allow-root
-echo "[OK] Core files updated."
 
-# Verify checksums
-echo "[INFO] Verifying core integrity..."
+# ==================================================
+#  STEP 3 — Download clean WordPress core
+# ==================================================
+echo "[INFO] Downloading clean WordPress core $WP_VERSION..."
+
+wp core download \
+    --version="$WP_VERSION" \
+    --force \
+    --skip-content \
+    --allow-root
+
+echo "[OK] Core files replaced with clean version."
+
+
+# ==================================================
+#  STEP 4 — Verify core integrity
+# ==================================================
+echo "[INFO] Verifying WordPress core checksums..."
+
 wp core verify-checksums --allow-root
-echo "[OK] Checksum verified."
 
-# Fix perms again
-echo "[INFO] Fixing permissions again after update..."
+echo "[OK] Core integrity verified."
+
+
+# ==================================================
+#  STEP 5 — Fix permissions (after repair)
+# ==================================================
+echo "[INFO] Fixing final permissions..."
 
 find "$WP_PATH" -type d -exec chmod 755 {} \;
 find "$WP_PATH" -type f -exec chmod 644 {} \;
@@ -88,4 +113,6 @@ if id "www-data" &>/dev/null; then
     chown -R www-data:www-data "$WP_PATH"
 fi
 
-echo "[DONE] WordPress core repaired and permissions fixed."
+echo
+echo "[DONE] WordPress core repaired, verified and permissions fixed."
+echo
