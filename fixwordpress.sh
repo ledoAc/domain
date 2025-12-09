@@ -23,8 +23,14 @@ echo
 echo "Found WordPress installations:"
 echo "==============================="
 i=1
+declare -a WP_DOMAINS
 for SITE in "${WP_SITES[@]}"; do
-    echo "  $i) $SITE"
+    # Try to get domain from WP-CLI
+    DOMAIN=$(wp option get siteurl --path="$SITE" 2>/dev/null)
+    DOMAIN=${DOMAIN#*://}
+    DOMAIN=${DOMAIN:-"UNKNOWN_DOMAIN"}
+    WP_DOMAINS+=("$DOMAIN")
+    echo "  $i) $DOMAIN — $SITE"
     ((i++))
 done
 echo "==============================="
@@ -38,9 +44,11 @@ if ! [[ "$SELECTED" =~ ^[0-9]+$ ]] || (( SELECTED < 1 || SELECTED > ${#WP_SITES[
     exit 1
 fi
 
-# Selected path
+# Selected path and domain
 WP_PATH="${WP_SITES[$((SELECTED-1))]}"
+WP_DOMAIN="${WP_DOMAINS[$((SELECTED-1))]}"
 echo "[INFO] Selected WordPress directory: $WP_PATH"
+echo "[INFO] Domain: $WP_DOMAIN"
 echo
 
 # cd into the selected directory
