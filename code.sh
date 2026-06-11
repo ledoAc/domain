@@ -753,7 +753,6 @@ if [ "$#" -eq 1 ]; then
     print_in_frame "A,MX,TXT,PTR... records"
 
     print_in_frame_records "A record"
-
 domain_blocks=$(whois "$domain" 2>/dev/null | grep -iE "serverHold|clientHold")
 
 a_records=$(dig +short A "$domain")
@@ -772,40 +771,40 @@ NC='\033[0m'
 
 if [ -n "$a_records" ]; then
 
-while read -r ip; do
+    while read -r ip; do
 
-    is_super_sonic=false
+        is_super_sonic=false
 
-    for s_ip in "${super_sonic_ips[@]}"; do
-        if [[ "$ip" == "$s_ip" ]]; then
-            is_super_sonic=true
-            break
+        for s_ip in "${super_sonic_ips[@]}"; do
+            if [[ "$ip" == "$s_ip" ]]; then
+                is_super_sonic=true
+                break
+            fi
+        done
+
+        who_ip=$(timeout 5 whois "$ip" 2>/dev/null | awk -F': *' '
+        /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+        /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+        /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+        ')
+
+        block_flag=""
+
+        if [ -n "$domain_blocks" ]; then
+            block_flag=" - DOMAIN BLOCKED ⚠"
         fi
-    done
 
-    who_ip=$(timeout 5 whois "$ip" 2>/dev/null | awk -F': *' '
-    /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    ')
+        if [[ "$ip" == "100.100.100.6" ]]; then
+            echo "The domain is not pointed to hosting or desync."
 
-    block_flag=""
+        elif [ "$is_super_sonic" = true ]; then
+            echo -e "$ip - ${GREEN}SuperSonic CDN${NC}$block_flag"
 
-    if [ -n "$domain_blocks" ]; then
-        block_flag=" - DOMAIN BLOCKED ⚠"
-    fi
+        else
+            echo -e "$ip - ${who_ip:-Unknown}$block_flag"
+        fi
 
-    if [[ "$ip" == "100.100.100.6" ]]; then
-        echo "The domain is not pointed to hosting or desync."
-
-    elif [ "$is_super_sonic" = true ] || [ -n "$cdn" ]; then
-        echo -e "$ip - ${cdn:-SuperSonic CDN}$block_flag"
-
-    else
-        echo -e "$ip - ${who_ip:-Unknown}$block_flag"
-    fi
-
-done <<< "$a_records"
+    done <<< "$a_records"
 
 else
     echo "No A record"
@@ -823,10 +822,8 @@ declare -A resolver_names=(
 
 for r in "${resolvers[@]}"; do
     ip_check=$(dig @"$r" +short A "$domain" | head -n1)
-    echo -e "${resolver_names[$r]} ($r) -> $ip_check"
+    echo "${resolver_names[$r]} ($r) -> $ip_check"
 done
-
-echo
 echo
 
     easy_a=$(dig +short $domain A)
