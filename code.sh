@@ -982,6 +982,10 @@ if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
     if [ -n "$output_clientHold" ]; then
         echo -e " $output_clientHold"
     fi
+	if [ -z "$a_records" ] && [ -z "$ns_records" ]; then
+        echo
+        echo "WARNING: Domain is on hold and DNS records are not resolving."
+    fi
 else
     print_in_frame "Domain blocks"
     echo -e "There are no serverHold or clientHold restrictions for this domain"
