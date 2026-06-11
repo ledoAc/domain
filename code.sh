@@ -943,7 +943,7 @@ echo
 
     print_in_frame_records "CNAME record"
 
-    cname_rec=$(dig +short +trace +nodnssec www.$domain CNAME | tail -n 1)
+    cname_rec=$(dig +short CNAME "www.$domain")
     echo -e "$cname_rec"
     echo
 
