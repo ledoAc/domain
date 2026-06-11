@@ -760,6 +760,7 @@ if [ -n "$a_records" ]; then
     who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | awk -F': *' '
     /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+	/^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     ')
 
     if [[ "$a_records" == "100.100.100.6" ]]; then
