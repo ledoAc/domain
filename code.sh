@@ -753,7 +753,6 @@ if [ "$#" -eq 1 ]; then
     print_in_frame "A,MX,TXT,PTR... records"
 
     print_in_frame_records "A record"
-domain_blocks=$(whois "$domain" 2>/dev/null | grep -iE "serverHold|clientHold")
 
 a_records=$(dig +short A "$domain")
 
@@ -788,20 +787,15 @@ if [ -n "$a_records" ]; then
         /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
         ')
 
-        block_flag=""
-
-        if [ -n "$domain_blocks" ]; then
-            block_flag=" - DOMAIN BLOCKED ⚠"
-        fi
-
+        
         if [[ "$ip" == "100.100.100.6" ]]; then
             echo "The domain is not pointed to hosting or desync."
 
         elif [ "$is_super_sonic" = true ]; then
-            echo -e "$ip - ${GREEN}SuperSonic CDN${NC}$block_flag"
+            echo -e "$ip - ${GREEN}SuperSonic CDN"
 
         else
-            echo -e "$ip - ${who_ip:-Unknown}$block_flag"
+            echo -e "$ip - ${who_ip:-Unknown}"
         fi
 
     done <<< "$a_records"
@@ -982,11 +976,7 @@ if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
     if [ -n "$output_clientHold" ]; then
         echo -e " $output_clientHold"
     fi
-	if [ -z "$a_records" ] && [ -z "$ns_records" ]; then
-        echo
-        echo "WARNING: Domain is on hold and DNS records are not resolving."
-    fi
-else
+	else
     print_in_frame "Domain blocks"
     echo -e "There are no serverHold or clientHold restrictions for this domain"
 fi
