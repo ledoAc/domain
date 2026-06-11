@@ -820,7 +820,7 @@ detect_cdn() {
     esac
 }
 echo
- echo -e "CDN - ${cdn:-Direct}"
+ echo -e "CDN - ${detect_cdn}"
 echo
 
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
