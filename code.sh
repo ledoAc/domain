@@ -754,8 +754,9 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
-domain_blocks=$(whois "$domain" | grep -iE "serverHold|clientHold")
-a_records=$(dig +short A "$domain" | head -n1)
+domain_blocks=$(whois "$domain" 2>/dev/null | grep -iE "serverHold|clientHold")
+
+a_records=$(dig +short A "$domain")
 
 super_sonic_ips=(
 "162.0.212.2"
@@ -766,10 +767,10 @@ super_sonic_ips=(
 "162.0.212.7"
 )
 
-is_super_sonic=false
+GREEN='\033[0;32m'
+NC='\033[0m'
 
-
-    if [ -n "$a_records" ]; then
+if [ -n "$a_records" ]; then
 
 while read -r ip; do
 
@@ -796,11 +797,8 @@ while read -r ip; do
         block_flag=" - DOMAIN BLOCKED ⚠"
     fi
 
-    GREEN='\033[0;32m'
-    NC='\033[0m'
-
     if [[ "$ip" == "100.100.100.6" ]]; then
-        echo -e "The domain is not pointed to hosting or desync."
+        echo "The domain is not pointed to hosting or desync."
 
     elif [ "$is_super_sonic" = true ] || [ -n "$cdn" ]; then
         echo -e "$ip - ${cdn:-SuperSonic CDN}$block_flag"
@@ -812,12 +810,9 @@ while read -r ip; do
 done <<< "$a_records"
 
 else
-    echo -e "No A record"
+    echo "No A record"
 fi
 
-else
-    echo -e "No A record"
-fi
 echo
 
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
@@ -830,12 +825,10 @@ declare -A resolver_names=(
 
 for r in "${resolvers[@]}"; do
     ip_check=$(dig @"$r" +short A "$domain" | head -n1)
-
-    name="${resolver_names[$r]}"
-
-    echo -e "$name ($r) -> $ip_check"
+    echo -e "${resolver_names[$r]} ($r) -> $ip_check"
 done
 
+echo
 echo
 
     easy_a=$(dig +short $domain A)
