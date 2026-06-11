@@ -964,6 +964,27 @@ else
 fi
 
 echo
+    print_in_frame_records "SSL"
+
+expiry_date=$(echo | openssl s_client \
+-servername "$domain" \
+-connect "$domain:443" 2>/dev/null \
+| openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
+
+if [ -n "$expiry_date" ]; then
+
+    expiry_ts=$(date -d "$expiry_date" +%s)
+    now_ts=$(date +%s)
+
+    days_left=$(( (expiry_ts - now_ts) / 86400 ))
+
+    echo "SSL expires: $expiry_date ($days_left days till expiration)"
+
+else
+    echo "No SSL certificate detected"
+fi
+
+echo
 
 output_serverHold=$(whois "$1" | grep -i "serverHold")
 output_clientHold=$(whois "$1" | grep -i "clientHold")
