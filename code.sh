@@ -828,14 +828,27 @@ echo
 
     print_in_frame_records "MX record"
 
-    mx_records=$(dig +short +trace +nodnssec $domain MX | grep '^MX' | sed 's/ from.*//')
+    mx_records=$(dig +short MX "$domain")
 
-    if [ -n "$mx_records" ]; then
-        echo -e "$mx_records"
-    else
-        echo -e "No MX records"
-    fi
-    echo
+if [ -n "$mx_records" ]; then
+    while read -r priority mx; do
+        # прибираємо крапку в кінці (часто dig її додає)
+        mx=$(echo "$mx" | sed 's/\.$//')
+
+        # отримуємо IP (A і AAAA)
+        ips=$(dig +short A "$mx"; dig +short AAAA "$mx")
+
+        if [ -n "$ips" ]; then
+            while read -r ip; do
+                echo -e "MX: $mx\tIP: $ip"
+            done <<< "$ips"
+        else
+            echo -e "MX: $mx\tIP: not resolved"
+        fi
+    done <<< "$mx_records"
+else
+    echo "No MX records"
+fi
 
     print_in_frame_records "TXT record"
 
