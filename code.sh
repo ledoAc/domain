@@ -754,10 +754,13 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
-  a_records=$(dig +short A "$domain" | grep -m1 -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
+ a_records=$(dig +short A "$domain" | head -n1)
 
 if [ -n "$a_records" ]; then
-    who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | grep -iEm1 "OrgName|netname" | cut -d: -f2-)
+    who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | awk -F': *' '
+    /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    ')
 
     if [[ "$a_records" == "100.100.100.6" ]]; then
         echo -e "The domain is not pointed to hosting or desync."
