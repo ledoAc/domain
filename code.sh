@@ -801,15 +801,22 @@ else
     echo -e "No A record"
 fi
 
-echo
+resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
 
-	resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
+declare -A resolver_names=(
+["1.1.1.1"]="Cloudflare DNS"
+["8.8.8.8"]="Google DNS"
+["9.9.9.9"]="Quad9 DNS"
+)
 
 echo -e "\nDNS Resolver Check"
 
 for r in "${resolvers[@]}"; do
     ip_check=$(dig @"$r" +short A "$domain" | head -n1)
-    echo -e "$r -> $ip_check"
+
+    name="${resolver_names[$r]}"
+
+    echo -e "$name ($r) -> $ip_check"
 done
 
 echo
