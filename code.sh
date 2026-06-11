@@ -754,19 +754,21 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
-    a_records=$(dig +short +trace +nodnssec $domain A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-    who_ip=$(whois "$a_records" | grep -E "OrgName|netname" | awk '{$1=""; print $0}')
+  a_records=$(dig +short A "$domain" | grep -m1 -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b')
 
-    if [ -n "$a_records" ]; then
-        if [[ "$a_records" == *"100.100.100.6"* ]]; then
-            echo -n -e "The domain is not pointed to hosting or desync.\n"
-        else
-            echo -n  -e "$a_records - $who_ip"
-        fi
+if [ -n "$a_records" ]; then
+    who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | grep -iEm1 "OrgName|netname" | cut -d: -f2-)
+
+    if [[ "$a_records" == "100.100.100.6" ]]; then
+        echo -e "The domain is not pointed to hosting or desync."
     else
-        echo -e "No A record"
+        echo -e "$a_records - ${who_ip:-Unknown}"
     fi
-    echo
+else
+    echo -e "No A record"
+fi
+
+echo
 
     easy_a=$(dig +short $domain A)
 
