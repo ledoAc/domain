@@ -838,6 +838,23 @@ done
 
 echo
 
+echo "──────── DOMAIN SUMMARY ────────"
+
+for ip in $a_records; do
+    cdn=$(detect_cdn "$ip")
+
+    if [ -n "$cdn" ]; then
+        status="CDN"
+    else
+        status="HOSTING"
+    fi
+
+    echo "$domain | $ip | $status | ${cdn:-Direct}"
+done
+
+echo "───────────────────────────────"
+
+
     easy_a=$(dig +short $domain A)
 
     check_easywp_ip() {
