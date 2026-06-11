@@ -783,8 +783,6 @@ while read -r ip; do
         fi
     done
 
-    cdn=$(detect_cdn "$ip")
-
     who_ip=$(timeout 5 whois "$ip" 2>/dev/null | awk -F': *' '
     /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
