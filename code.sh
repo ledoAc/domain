@@ -753,8 +753,51 @@ if [ "$#" -eq 1 ]; then
     print_in_frame "A,MX,TXT,PTR... records"
 
     print_in_frame_records "A record"
+domain="$1"
 
-a_records=$(dig +short A "$domain" | head -n1)
+########################################
+# 🌐 MULTI DNS RESOLVER CHECK
+########################################
+
+resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
+
+echo -e "\nDNS Resolver Check"
+
+for r in "${resolvers[@]}"; do
+    ip_check=$(dig @"$r" +short A "$domain" | head -n1)
+    echo -e "$r -> $ip_check"
+done
+
+echo
+
+########################################
+# ☁️ CDN DETECTION ENGINE
+########################################
+
+detect_cdn() {
+    local ip=$1
+
+    case "$ip" in
+        162.0.212.*)
+            echo "SuperSonic CDN"
+            return ;;
+        172.67.*|104.*|188.114.*)
+            echo "Cloudflare CDN"
+            return ;;
+        13.*)
+            echo "AWS"
+            return ;;
+        *)
+            echo ""
+            return ;;
+    esac
+}
+
+########################################
+# 🌐 A RECORD CHECK (ENHANCED)
+########################################
+
+a_records=$(dig +short A "$domain")
 
 super_sonic_ips=(
 "162.0.212.2"
@@ -765,104 +808,93 @@ super_sonic_ips=(
 "162.0.212.7"
 )
 
-is_super_sonic=false
+GREEN='\033[0;32m'
+NC='\033[0m'
+
+echo "A record"
 
 if [ -n "$a_records" ]; then
 
-    # перевірка чи IP входить у CDN список
-    for ip in "${super_sonic_ips[@]}"; do
-        if [[ "$a_records" == "$ip" ]]; then
+while read -r ip; do
+
+    is_super_sonic=false
+
+    for s_ip in "${super_sonic_ips[@]}"; do
+        if [[ "$ip" == "$s_ip" ]]; then
             is_super_sonic=true
             break
         fi
     done
 
-    who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | awk -F': *' '
+    cdn=$(detect_cdn "$ip")
+
+    who_ip=$(timeout 5 whois "$ip" 2>/dev/null | awk -F': *' '
     /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     ')
 
-    GREEN='\033[0;32m'
-    NC='\033[0m'
+    if [[ "$ip" == "100.100.100.6" ]]; then
+        echo "The domain is not pointed to hosting or desync."
 
-    if [[ "$a_records" == "100.100.100.6" ]]; then
-        echo -e "The domain is not pointed to hosting or desync."
-
-    elif [ "$is_super_sonic" = true ]; then
-        echo -e "$a_records - ${GREEN}SuperSonic CDN${NC}"
+    elif [ "$is_super_sonic" = true ] || [ -n "$cdn" ]; then
+        echo -e "${GREEN}$ip - ${cdn:-SuperSonic CDN}${NC}"
 
     else
-        echo -e "$a_records - ${who_ip:-Unknown}"
+        echo -e "$ip - ${who_ip:-Unknown}"
     fi
 
+done <<< "$a_records"
+
 else
-    echo -e "No A record"
+    echo "No A record"
 fi
 
 echo
 
-    easy_a=$(dig +short $domain A)
+########################################
+# 🧠 EASYWP CHECK (your logic preserved)
+########################################
 
-    check_easywp_ip() {
-        local ip=$1
-        if [[ " ${ip_addresses[@]} " =~ " $ip " ]]; then
-            print_in_frame_red "The IP address $ip belongs to EasyWP"
-        fi
-    }
+easy_a=$(dig +short $domain A)
 
-    ip_addresses=(
-        "162.255.118.65"
-        "162.255.118.66"
-        "162.255.118.67"
-        "162.255.118.68"
-        "63.250.43.1"
-        "63.250.43.2"
-        "63.250.43.3"
-        "63.250.43.4"
-        "63.250.43.5"
-        "63.250.43.6"
-        "63.250.43.7"
-        "63.250.43.8"
-        "63.250.43.9"
-        "63.250.43.10"
-        "63.250.43.11"
-        "63.250.43.12"
-        "63.250.43.13"
-        "63.250.43.14"
-        "63.250.43.15"
-        "63.250.43.16"
-        "63.250.43.128"
-        "63.250.43.129"
-        "63.250.43.130"
-        "63.250.43.131"
-        "63.250.43.132"
-        "63.250.43.133"
-        "63.250.43.134"
-        "63.250.43.135"
-        "63.250.43.136"
-        "63.250.43.137"
-        "63.250.43.138"
-        "63.250.43.139"
-        "63.250.43.144"
-        "63.250.43.145"
-        "63.250.43.146"
-        "63.250.43.147"
-    )
+ip_addresses=(
+"162.255.118.65" "162.255.118.66" "162.255.118.67" "162.255.118.68"
+"63.250.43.1" "63.250.43.2" "63.250.43.3" "63.250.43.4"
+"63.250.43.5" "63.250.43.6" "63.250.43.7" "63.250.43.8"
+"63.250.43.9" "63.250.43.10" "63.250.43.11" "63.250.43.12"
+"63.250.43.13" "63.250.43.14" "63.250.43.15" "63.250.43.16"
+"63.250.43.128" "63.250.43.129" "63.250.43.130" "63.250.43.131"
+"63.250.43.132" "63.250.43.133" "63.250.43.134" "63.250.43.135"
+"63.250.43.136" "63.250.43.137" "63.250.43.138" "63.250.43.139"
+"63.250.43.144" "63.250.43.145" "63.250.43.146" "63.250.43.147"
+)
 
-    for ip in ${easy_a[@]}; do
-        check_easywp_ip "$ip"
-    done
+check_easywp_ip() {
+    local ip=$1
+    if [[ " ${ip_addresses[@]} " =~ " $ip " ]]; then
+        echo "The IP address $ip belongs to EasyWP"
+    fi
+}
 
-    print_in_frame_records "MX record"
+for ip in ${easy_a[@]}; do
+    check_easywp_ip "$ip"
+done
 
-    mx_records=$(dig +short MX "$domain")
+echo
+
+########################################
+# 📧 MX RECORD
+########################################
+
+echo "MX record"
+
+mx_records=$(dig +short MX "$domain")
 
 if [ -n "$mx_records" ]; then
     while read -r priority mx; do
         mx=$(echo "$mx" | sed 's/\.$//')
 
-        # отримуємо IP (A і AAAA)
         ips=$(dig +short A "$mx"; dig +short AAAA "$mx")
 
         if [ -n "$ips" ]; then
@@ -877,121 +909,172 @@ else
     echo "No MX records"
 fi
 
-    print_in_frame_records "TXT record"
+echo
 
-txt_records=$(dig +short +trace +nodnssec $domain TXT | grep '^TXT' | sed 's/ from.*//')
+########################################
+# 🧾 TXT RECORD
+########################################
+
+echo "TXT record"
+
+txt_records=$(dig +short TXT "$domain")
+
 if [ -n "$txt_records" ]; then
     echo "$txt_records"
 else
-    echo -e "No TXT records."
+    echo "No TXT records."
 fi
+
 echo
 
-  print_in_frame_records "SOA record"
+########################################
+# 📡 SOA
+########################################
 
-    soa_records=$(dig +short +trace +nodnssec $domain SOA | tail -n 1)
+echo "SOA record"
 
-    if [ -n "$soa_records" ]; then
-        echo "$soa_records"
-    else
-        echo -e "No SOA records."
+soa_records=$(dig +short SOA "$domain" | tail -n 1)
+
+echo "${soa_records:-No SOA records.}"
+
+echo
+
+########################################
+# 🧠 DKIM MULTI SELECTOR SCAN
+########################################
+
+echo "DKIM record scan"
+
+dkim_selectors=("default" "google" "mail" "selector1" "selector2")
+
+for sel in "${dkim_selectors[@]}"; do
+    result=$(dig +short TXT "${sel}._domainkey.$domain")
+
+    if [ -n "$result" ]; then
+        echo "$sel._domainkey.$domain -> $result"
     fi
-    echo
+done
 
-    print_in_frame_records "DKIM record"
+echo
 
-    dkim_records=$(host -t TXT default._domainkey.$domain)
+########################################
+# 🚨 DMARC
+########################################
 
-    if [ -n "$dkim_records" ]; then
-        echo "$dkim_records"
-    else
-        echo -e "No DKIM records."
-    fi
-    echo
+echo "DMARC record"
 
-    print_in_frame_records "DMARC record"
+dmarc_records=$(dig +short TXT "_dmarc.$domain")
 
-    dmarc_records=$(host -t TXT _dmarc.$domain)
+echo "${dmarc_records:-No DMARC records.}"
 
-    if [ -n "$dmarc_records" ]; then
-        echo "$dmarc_records"
-    else
-        echo -e "No DMARC records."
-    fi
-    echo
+echo
 
-    print_in_frame_records "CNAME record"
+########################################
+# 🌐 CNAME
+########################################
 
-    cname_rec=$(dig +short +trace +nodnssec www.$domain CNAME | tail -n 1)
-    echo -e "$cname_rec"
-    echo
+echo "CNAME record"
 
-    print_in_frame_records "PTR record"
+cname_rec=$(dig +short CNAME "www.$domain")
 
-    ptr_record=$(dig +short -x $a_records)
-    if [ -n "$ptr_record" ]; then
-        echo "PTR record $a_records: $ptr_record "
-    else
-        echo "No PTR records found for IP address."
-    fi
-	echo
+echo "${cname_rec:-No CNAME}"
 
-output_serverHold=$(whois "$1" | grep -i "serverHold")
-output_clientHold=$(whois "$1" | grep -i "clientHold")
+echo
 
-if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
-    print_in_frame_red "Domain blocks"
-    if [ -n "$output_serverHold" ]; then
-        echo -e " $output_serverHold"
-    fi
-    if [ -n "$output_clientHold" ]; then
-        echo -e " $output_clientHold"
-    fi
+########################################
+# 🔐 PTR CHECK (ENHANCED)
+########################################
+
+echo "PTR record"
+
+if [ -n "$a_records" ]; then
+    while read -r ip; do
+        ptr=$(dig +short -x "$ip")
+
+        if [ -n "$ptr" ]; then
+            echo "PTR $ip -> $ptr"
+        else
+            echo "PTR $ip -> missing"
+        fi
+    done <<< "$a_records"
 else
-    print_in_frame "Domain blocks"
-    echo -e "There are no serverHold or clientHold restrictions for this domain"
+    echo "No A record for PTR check"
 fi
 
+echo
 
-    ns_records=$(dig +short NS @1.1.1.1 "$domain")
+########################################
+# 🚫 DOMAIN BLOCKS
+########################################
 
-    print_in_frame "Nameservers"
+output_serverHold=$(whois "$domain" | grep -i "serverHold")
+output_clientHold=$(whois "$domain" | grep -i "clientHold")
 
-    if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Nameservers records for the domain $domain. Maybe the domain doesn't point to the server.\n"
+echo "Domain blocks"
+
+if [ -n "$output_serverHold" ] || [ -n "$output_clientHold" ]; then
+    echo "$output_serverHold"
+    echo "$output_clientHold"
+else
+    echo "No serverHold or clientHold restrictions"
+fi
+
+echo
+
+########################################
+# 📡 NAMESERVERS
+########################################
+
+echo "Nameservers"
+
+ns_records=$(dig +short NS "$domain")
+
+echo "$ns_records"
+
+echo
+
+########################################
+# 📜 WHOIS
+########################################
+
+echo "WHOIS"
+
+whois "$domain" | grep -E "Updated Date|Registry Expiry Date|Registrar|Name Server|DNSSEC"
+
+echo
+
+########################################
+# 🧩 GLUE RECORDS
+########################################
+
+echo "Glue records"
+
+for ns in $ns_records; do
+    ip=$(dig +short "$ns")
+    echo "----- $ns ----- $ip ----"
+done
+
+echo
+
+########################################
+# 📊 TABLE OUTPUT
+########################################
+
+echo "──────── DOMAIN SUMMARY ────────"
+
+for ip in $a_records; do
+    cdn=$(detect_cdn "$ip")
+
+    if [ -n "$cdn" ]; then
+        status="CDN"
     else
-        echo "$ns_records" | while read -r line; do
-            if [[ "$line" == *"launch1.spaceship.net"* || "$line" == *"launch2.spaceship.net"* ]]; then
-                print_in_frame_blue "---Spaceship--$line"
-            else
-                echo "$line"
-            fi
-        done
+        status="HOSTING"
     fi
 
-    print_in_frame "WHOIS"
+    echo "$domain | $ip | $status | ${cdn:-Direct}"
+done
 
-     who_is=$(whois $domain | grep -E "Updated Date|Name Server|Registry Expiry Date|Registrar:|owner:|nserver:|organization:|organization-loc:|DNSSEC")
-
-    tld=$(echo "$domain" | awk -F '.' '{print $NF}')
-
-    if [ "$tld" = "pk" ]; then
-        echo "This TLD has no whois server, but you can access the whois database at http://www.pknic.net.pk/"
-    fi
-
-
-    echo -e "$who_is"
-
-    print_in_frame "Glue records"
-
-    if [ -z "$ns_records" ]; then
-        echo -e "\nUnfortunately, there are no Glue records for the domain $domain. Maybe they haven't been created yet.\n"
-    else
-        while read -r ns; do
-            ip=$(dig +short @1.1.1.1 $ns)
-            echo -e "----- $ns ----- $ip ---- "
-        done <<< "$ns_records"
-    fi
+echo "───────────────────────────────"
 
     echo
     echo -e "\e[96m###################################################################################################################################################\e[0m"
