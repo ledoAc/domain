@@ -754,20 +754,48 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
- a_records=$(dig +short A "$domain" | head -n1)
+a_records=$(dig +short A "$domain" | head -n1)
+
+super_sonic_ips=(
+"162.0.212.2"
+"162.0.212.3"
+"162.0.212.4"
+"162.0.212.5"
+"162.0.212.6"
+"162.0.212.7"
+)
+
+is_super_sonic=false
 
 if [ -n "$a_records" ]; then
+
+    # перевірка чи IP входить у CDN список
+    for ip in "${super_sonic_ips[@]}"; do
+        if [[ "$a_records" == "$ip" ]]; then
+            is_super_sonic=true
+            break
+        fi
+    done
+
     who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | awk -F': *' '
     /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-	/^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
     ')
+
+    GREEN='\033[0;32m'
+    NC='\033[0m'
 
     if [[ "$a_records" == "100.100.100.6" ]]; then
         echo -e "The domain is not pointed to hosting or desync."
+
+    elif [ "$is_super_sonic" = true ]; then
+        echo -e "${GREEN}$a_records - SuperSonic CDN${NC}"
+
     else
         echo -e "$a_records - ${who_ip:-Unknown}"
     fi
+
 else
     echo -e "No A record"
 fi
