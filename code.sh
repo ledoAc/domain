@@ -754,8 +754,7 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
-
-
+domain_blocks=$(whois "$domain" | grep -iE "serverHold|clientHold")
 a_records=$(dig +short A "$domain" | head -n1)
 
 super_sonic_ips=(
@@ -787,15 +786,51 @@ if [ -n "$a_records" ]; then
     GREEN='\033[0;32m'
     NC='\033[0m'
 
-    if [[ "$a_records" == "100.100.100.6" ]]; then
+    if [ -n "$a_records" ]; then
+
+while read -r ip; do
+
+    is_super_sonic=false
+
+    for s_ip in "${super_sonic_ips[@]}"; do
+        if [[ "$ip" == "$s_ip" ]]; then
+            is_super_sonic=true
+            break
+        fi
+    done
+
+    cdn=$(detect_cdn "$ip")
+
+    who_ip=$(timeout 5 whois "$ip" 2>/dev/null | awk -F': *' '
+    /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
+    ')
+
+    block_flag=""
+
+    if [ -n "$domain_blocks" ]; then
+        block_flag=" - DOMAIN BLOCKED ⚠"
+    fi
+
+    GREEN='\033[0;32m'
+    NC='\033[0m'
+
+    if [[ "$ip" == "100.100.100.6" ]]; then
         echo -e "The domain is not pointed to hosting or desync."
 
-    elif [ "$is_super_sonic" = true ]; then
-        echo -e "$a_records - ${GREEN}SuperSonic CDN${NC}"
+    elif [ "$is_super_sonic" = true ] || [ -n "$cdn" ]; then
+        echo -e "$ip - ${cdn:-SuperSonic CDN}$block_flag"
 
     else
-        echo -e "$a_records - ${who_ip:-Unknown}"
+        echo -e "$ip - ${who_ip:-Unknown}$block_flag"
     fi
+
+done <<< "$a_records"
+
+else
+    echo -e "No A record"
+fi
 
 else
     echo -e "No A record"
