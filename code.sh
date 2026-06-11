@@ -768,23 +768,6 @@ super_sonic_ips=(
 
 is_super_sonic=false
 
-if [ -n "$a_records" ]; then
-
-    for ip in "${super_sonic_ips[@]}"; do
-        if [[ "$a_records" == "$ip" ]]; then
-            is_super_sonic=true
-            break
-        fi
-    done
-
-    who_ip=$(timeout 5 whois "$a_records" 2>/dev/null | awk -F': *' '
-    /^OrgName:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    /^Organization:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
-    ')
-
-    GREEN='\033[0;32m'
-    NC='\033[0m'
 
     if [ -n "$a_records" ]; then
 
