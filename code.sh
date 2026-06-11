@@ -790,7 +790,7 @@ if [ -n "$a_records" ]; then
         echo -e "The domain is not pointed to hosting or desync."
 
     elif [ "$is_super_sonic" = true ]; then
-        echo -e "${GREEN}$a_records - SuperSonic CDN${NC}"
+        echo -e "$a_records - ${GREEN}SuperSonic CDN${NC}"
 
     else
         echo -e "$a_records - ${who_ip:-Unknown}"
@@ -860,7 +860,6 @@ echo
 
 if [ -n "$mx_records" ]; then
     while read -r priority mx; do
-        # прибираємо крапку в кінці (часто dig її додає)
         mx=$(echo "$mx" | sed 's/\.$//')
 
         # отримуємо IP (A і AAAA)
