@@ -800,7 +800,7 @@ if [ -n "$a_records" ]; then
 else
     echo -e "No A record"
 fi
-
+echo
 detect_cdn() {
     local ip=$1
 
@@ -819,6 +819,9 @@ detect_cdn() {
             return ;;
     esac
 }
+echo
+ echo -e "${cdn:-Direct}"
+echo
 
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
 
@@ -837,23 +840,6 @@ for r in "${resolvers[@]}"; do
 done
 
 echo
-
-echo "──────── DOMAIN SUMMARY ────────"
-
-for ip in $a_records; do
-    cdn=$(detect_cdn "$ip")
-
-    if [ -n "$cdn" ]; then
-        status="CDN"
-    else
-        status="HOSTING"
-    fi
-
-    echo "$domain | $ip | $status | ${cdn:-Direct}"
-done
-
-echo "───────────────────────────────"
-
 
     easy_a=$(dig +short $domain A)
 
