@@ -895,7 +895,7 @@ if [ -n "$mx_records" ]; then
 else
     echo "No MX records"
 fi
-
+echo
     print_in_frame_records "TXT record"
 
 txt_records=$(dig +short +trace +nodnssec $domain TXT | grep '^TXT' | sed 's/ from.*//')
