@@ -801,27 +801,6 @@ else
     echo -e "No A record"
 fi
 echo
-detect_cdn() {
-    local ip=$1
-
-    case "$ip" in
-        162.0.212.*)
-            echo "SuperSonic CDN"
-            return ;;
-        172.67.*|104.*|188.114.*)
-            echo "Cloudflare CDN"
-            return ;;
-        13.*)
-            echo "AWS"
-            return ;;
-        *)
-            echo ""
-            return ;;
-    esac
-}
-echo
- echo -e "CDN - ${detect_cdn}"
-echo
 
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
 
