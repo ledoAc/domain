@@ -754,6 +754,8 @@ if [ "$#" -eq 1 ]; then
 
     print_in_frame_records "A record"
 
+
+
 a_records=$(dig +short A "$domain" | head -n1)
 
 super_sonic_ips=(
@@ -769,7 +771,6 @@ is_super_sonic=false
 
 if [ -n "$a_records" ]; then
 
-    # перевірка чи IP входить у CDN список
     for ip in "${super_sonic_ips[@]}"; do
         if [[ "$a_records" == "$ip" ]]; then
             is_super_sonic=true
@@ -799,6 +800,17 @@ if [ -n "$a_records" ]; then
 else
     echo -e "No A record"
 fi
+
+echo
+
+	resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
+
+echo -e "\nDNS Resolver Check"
+
+for r in "${resolvers[@]}"; do
+    ip_check=$(dig @"$r" +short A "$domain" | head -n1)
+    echo -e "$r -> $ip_check"
+done
 
 echo
 
@@ -900,14 +912,17 @@ echo
 
     print_in_frame_records "DKIM record"
 
-    dkim_records=$(host -t TXT default._domainkey.$domain)
+   dkim_selectors=("default" "google" "mail" "selector1" "selector2")
 
-    if [ -n "$dkim_records" ]; then
-        echo "$dkim_records"
-    else
-        echo -e "No DKIM records."
+for sel in "${dkim_selectors[@]}"; do
+    result=$(dig +short TXT "${sel}._domainkey.$domain")
+
+    if [ -n "$result" ]; then
+        echo "$sel._domainkey.$domain -> $result"
     fi
-    echo
+done
+
+echo
 
     print_in_frame_records "DMARC record"
 
@@ -928,13 +943,21 @@ echo
 
     print_in_frame_records "PTR record"
 
-    ptr_record=$(dig +short -x $a_records)
-    if [ -n "$ptr_record" ]; then
-        echo "PTR record $a_records: $ptr_record "
-    else
-        echo "No PTR records found for IP address."
-    fi
-	echo
+   if [ -n "$a_records" ]; then
+    while read -r ip; do
+        ptr=$(dig +short -x "$ip")
+
+        if [ -n "$ptr" ]; then
+            echo "PTR $ip -> $ptr"
+        else
+            echo "PTR $ip -> missing"
+        fi
+    done <<< "$a_records"
+else
+    echo "No A record for PTR check"
+fi
+
+echo
 
 output_serverHold=$(whois "$1" | grep -i "serverHold")
 output_clientHold=$(whois "$1" | grep -i "clientHold")
