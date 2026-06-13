@@ -759,9 +759,10 @@ MAGENTA="\033[0;35m"
 RED="\033[0;31m"
 GRAY="\033[0;90m"
 ORANGE="\033[0;91m"
+UNDERLINE="\033[4m"
     print_in_frame "A,MX,TXT,PTR... records"
 
-    echo -e "${BLUE}A record${RESET}"
+     echo -e "${UNDERLINE}${ORANGE}A record${RESET}"
 
 a_records=$(dig +short A "$domain")
 
@@ -881,7 +882,7 @@ echo
         check_easywp_ip "$ip"
     done
 
-    echo -e "${GREEN}MX record${RESET}"
+    echo -e "${UNDERLINE}${GREEN}MX record${RESET}"
 
     mx_records=$(dig +short MX "$domain")
 
@@ -904,7 +905,7 @@ else
     echo "No MX records"
 fi
 echo
-    echo -e "${YELLOW}TXT record${RESET}"
+    echo -e "${UNDERLINE}${YELLOW}TXT record${RESET}"
 
 txt_records=$(dig +short +trace +nodnssec $domain TXT | grep '^TXT' | sed 's/ from.*//')
 if [ -n "$txt_records" ]; then
@@ -914,7 +915,7 @@ else
 fi
 echo
 
-  echo -e "${MAGENTA}SOA record${RESET}"
+  echo -e "${UNDERLINE}${MAGENTA}SOA record${RESET}"
 
     soa_records=$(dig +short +trace +nodnssec $domain SOA | tail -n 1)
 
@@ -925,7 +926,7 @@ echo
     fi
     echo
 
-    echo -e "${CYAN}DKIM record${RESET}"
+    echo -e "${UNDERLINE}${CYAN}DKIM record${RESET}"
 
    dkim_selectors=("default" "google" "mail" "selector1" "selector2")
 
@@ -939,7 +940,7 @@ done
 
 echo
 
-    echo -e "${RED}DMARC record${RESET}"
+    echo -e "${UNDERLINE}${RED}DMARC record${RESET}"
 
     dmarc_records=$(host -t TXT _dmarc.$domain)
 
@@ -950,13 +951,14 @@ echo
     fi
     echo
 
-    print_in_frame_records "CNAME record"
+ 
+  echo -e "${UNDERLINE}${MAGENTA}CNAME record${RESET}"
 
     cname_rec=$(dig +short CNAME "www.$domain")
     echo -e "$cname_rec"
     echo
 
-    print_in_frame_records "PTR record"
+    echo -e "${UNDERLINE}${GREEN}PTR record${RESET}"
 
    if [ -n "$a_records" ]; then
     while read -r ip; do
@@ -973,7 +975,7 @@ else
 fi
 
 echo
-    echo -e "${ORANGE}SSL${RESET}"
+    echo -e "${UNDERLINE}${ORANGE}SSL${RESET}"
 
 expiry_date=$(echo | openssl s_client \
 -servername "$domain" \
