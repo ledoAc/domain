@@ -749,10 +749,19 @@ fi
 
 if [ "$#" -eq 1 ]; then
     domain="$1"
+RESET="\033[0m"
 
+BLUE="\033[0;34m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+CYAN="\033[0;36m"
+MAGENTA="\033[0;35m"
+RED="\033[0;31m"
+GRAY="\033[0;90m"
+ORANGE="\033[0;91m"
     print_in_frame "A,MX,TXT,PTR... records"
 
-    print_in_frame_records "A record"
+    echo -e "${BLUE}A record${RESET}"
 
 a_records=$(dig +short A "$domain")
 
@@ -792,7 +801,7 @@ if [ -n "$a_records" ]; then
             echo "The domain is not pointed to hosting or desync."
 
         elif [ "$is_super_sonic" = true ]; then
-            echo -e "$ip - ${GREEN}SuperSonic CDN"
+            echo -e "$ip - ${GREEN}SuperSonic CDN${NC}"
 
         else
             echo -e "$ip - ${who_ip:-Unknown}"
@@ -872,7 +881,7 @@ echo
         check_easywp_ip "$ip"
     done
 
-    print_in_frame_records "MX record"
+    echo -e "${GREEN}MX record${RESET}"
 
     mx_records=$(dig +short MX "$domain")
 
@@ -895,7 +904,7 @@ else
     echo "No MX records"
 fi
 echo
-    print_in_frame_records "TXT record"
+    echo -e "${YELLOW}TXT record${RESET}"
 
 txt_records=$(dig +short +trace +nodnssec $domain TXT | grep '^TXT' | sed 's/ from.*//')
 if [ -n "$txt_records" ]; then
@@ -905,7 +914,7 @@ else
 fi
 echo
 
-  print_in_frame_records "SOA record"
+  echo -e "${MAGENTA}SOA record${RESET}"
 
     soa_records=$(dig +short +trace +nodnssec $domain SOA | tail -n 1)
 
@@ -916,7 +925,7 @@ echo
     fi
     echo
 
-    print_in_frame_records "DKIM record"
+    echo -e "${CYAN}DKIM record${RESET}"
 
    dkim_selectors=("default" "google" "mail" "selector1" "selector2")
 
@@ -930,7 +939,7 @@ done
 
 echo
 
-    print_in_frame_records "DMARC record"
+    echo -e "${RED}DMARC record${RESET}"
 
     dmarc_records=$(host -t TXT _dmarc.$domain)
 
@@ -964,7 +973,7 @@ else
 fi
 
 echo
-    print_in_frame_records "SSL"
+    echo -e "${ORANGE}SSL${RESET}"
 
 expiry_date=$(echo | openssl s_client \
 -servername "$domain" \
