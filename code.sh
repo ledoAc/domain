@@ -750,7 +750,6 @@ fi
 if [ "$#" -eq 1 ]; then
     domain="$1"
 RESET="\033[0m"
-
 BLUE="\033[0;34m"
 GREEN="\033[0;32m"
 YELLOW="\033[0;33m"
@@ -760,9 +759,10 @@ RED="\033[0;31m"
 GRAY="\033[0;90m"
 ORANGE="\033[0;91m"
 UNDERLINE="\033[4m"
+
     print_in_frame "A,MX,TXT,PTR... records"
 
-     echo -e "${UNDERLINE}${ORANGE}A record${RESET}"
+     echo -e "${ORANGE}${UNDERLINE}A record${RESET}"
 
 a_records=$(dig +short A "$domain")
 
@@ -882,7 +882,7 @@ echo
         check_easywp_ip "$ip"
     done
 
-    echo -e "${UNDERLINE}${GREEN}MX record${RESET}"
+    echo -e "${GREEN}${UNDERLINE}MX record${RESET}"
 
     mx_records=$(dig +short MX "$domain")
 
@@ -905,7 +905,7 @@ else
     echo "No MX records"
 fi
 echo
-    echo -e "${UNDERLINE}${YELLOW}TXT record${RESET}"
+    echo -e "${YELLOW}${UNDERLINE}TXT record${RESET}"
 
 txt_records=$(dig +short +trace +nodnssec $domain TXT | grep '^TXT' | sed 's/ from.*//')
 if [ -n "$txt_records" ]; then
@@ -915,7 +915,7 @@ else
 fi
 echo
 
-  echo -e "${UNDERLINE}${MAGENTA}SOA record${RESET}"
+  echo -e "${MAGENTA}${UNDERLINE}SOA record${RESET}"
 
     soa_records=$(dig +short +trace +nodnssec $domain SOA | tail -n 1)
 
@@ -926,7 +926,7 @@ echo
     fi
     echo
 
-    echo -e "${UNDERLINE}${CYAN}DKIM record${RESET}"
+    echo -e "${CYAN}${UNDERLINE}DKIM record${RESET}"
 
    dkim_selectors=("default" "google" "mail" "selector1" "selector2")
 
@@ -940,7 +940,7 @@ done
 
 echo
 
-    echo -e "${UNDERLINE}${RED}DMARC record${RESET}"
+    echo -e "${RED}${UNDERLINE}DMARC record${RESET}"
 
     dmarc_records=$(host -t TXT _dmarc.$domain)
 
@@ -952,13 +952,13 @@ echo
     echo
 
  
-  echo -e "${UNDERLINE}${MAGENTA}CNAME record${RESET}"
+  echo -e "${MAGENTA}${UNDERLINE}CNAME record${RESET}"
 
     cname_rec=$(dig +short CNAME "www.$domain")
     echo -e "$cname_rec"
     echo
 
-    echo -e "${UNDERLINE}${GREEN}PTR record${RESET}"
+    echo -e "${GREEN}${UNDERLINE}PTR record${RESET}"
 
    if [ -n "$a_records" ]; then
     while read -r ip; do
@@ -975,7 +975,7 @@ else
 fi
 
 echo
-    echo -e "${UNDERLINE}${ORANGE}SSL${RESET}"
+    echo -e "${ORANGE}${UNDERLINE}SSL${RESET}"
 
 expiry_date=$(echo | openssl s_client \
 -servername "$domain" \
