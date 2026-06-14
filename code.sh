@@ -1,7 +1,7 @@
 #!/bin/bash
 #autor: Ostap Beshchanyk
 #version: 2.7
-
+  
 clear
 
 if [ -z "$1" ]; then
