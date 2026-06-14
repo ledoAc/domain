@@ -1067,158 +1067,153 @@ fi
     echo
 
 
-echo -e "Test"
 
+
+# Кольорові змінні
 ORANGE='\033[0;33m'
 GREEN='\033[0;32m'
 RED='\033[0;31m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
 NC='\033[0m'
 
-echo -e "${ORANGE}WORDPRESS DIAGNOSTIC: $domain${NC}"
+# Перевірка аргументу
+if [ -z "$1" ]; then
+    echo -e "${RED}Помилка: Будь ласка, вкажіть домен${NC}"
+    echo "Використання: $0 domain.com"
+    exit 1
+fi
+
+domain="$1"
+
+# Функції
+safe_curl() {
+    timeout 10 curl -s -k -L --max-time 10 "$@"
+}
+
+check_http_code() {
+    timeout 10 curl -o /dev/null -s -k -w "%{http_code}" --max-time 10 "$1"
+}
+
+# Заголовок таблиці
 echo ""
+echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════════════╗${NC}"
+echo -e "${CYAN}║                    WORDPRESS DIAGNOSTIC: ${ORANGE}$domain${CYAN}                    ║${NC}"
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-# ---------------- CMS DETECTION ----------------
-echo "CMS detection"
-
-wp_detect=$(timeout 7 curl -sL "https://$domain" | grep -i "wp-content")
-
+# 1. CMS DETECTION
+echo -e "${CYAN}║${NC} ${BLUE}● CMS DETECTION${NC}                                                                   ${CYAN}║${NC}"
+wp_detect=$(safe_curl "https://$domain" | grep -iE "wp-content|wp-includes|wordpress")
 if [ -n "$wp_detect" ]; then
-    echo -e "CMS: ${GREEN}WordPress detected${NC}"
+    wp_version=$(safe_curl "https://$domain" | grep -oP 'ver=[0-9.]+' | head -1 | cut -d'=' -f2)
+    echo -e "${CYAN}║${NC}   └─ CMS: ${GREEN}WordPress detected${NC}"
+    [ -n "$wp_version" ] && echo -e "${CYAN}║${NC}   └─ Version: ${ORANGE}$wp_version${NC}"
 else
-    echo -e "CMS: ${RED}Not clearly detected${NC}"
+    echo -e "${CYAN}║${NC}   └─ CMS: ${RED}Not clearly detected${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- FRONTEND STATUS ----------------
-echo "Frontend status"
-
+# 2. FRONTEND STATUS
+echo -e "${CYAN}║${NC} ${BLUE}● FRONTEND STATUS${NC}                                                               ${CYAN}║${NC}"
 http_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain")
-
-echo "HTTP code: $http_code"
-
+echo -e "${CYAN}║${NC}   └─ HTTP code: $http_code"
 if [[ "$http_code" =~ ^(500|502|503|504)$ ]]; then
-    echo -e "${RED}CRITICAL: Server error${NC}"
+    echo -e "${CYAN}║${NC}   └─ Status: ${RED}CRITICAL - Server error${NC}"
 elif [ "$http_code" == "000" ]; then
-    echo -e "${RED}CRITICAL: No response / firewall / DNS issue${NC}"
+    echo -e "${CYAN}║${NC}   └─ Status: ${RED}CRITICAL - No response / DNS issue${NC}"
+else
+    echo -e "${CYAN}║${NC}   └─ Status: ${GREEN}OK${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- CRITICAL ERROR DETECTION ----------------
-echo "Critical error scan"
-
+# 3. CRITICAL ERRORS
+echo -e "${CYAN}║${NC} ${BLUE}● CRITICAL ERROR SCAN${NC}                                                           ${CYAN}║${NC}"
 page=$(timeout 7 curl -sL "https://$domain")
-
-if echo "$page" | grep -qi "critical error"; then
-    echo -e "${RED}CRITICAL: WordPress fatal error detected${NC}"
-elif echo "$page" | grep -qi "there has been a critical error"; then
-    echo -e "${RED}CRITICAL: WP fatal error page${NC}"
-elif echo "$page" | grep -qi "fatal error"; then
-    echo -e "${RED}CRITICAL: PHP fatal error detected${NC}"
+if echo "$page" | grep -qi "critical error\|fatal error\|there has been a critical error"; then
+    echo -e "${CYAN}║${NC}   └─ ${RED}CRITICAL: WordPress/PHP fatal error detected${NC}"
 else
-    echo -e "${GREEN}No visible critical errors${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}No visible critical errors${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- BLANK PAGE CHECK ----------------
-echo "Response integrity"
-
+# 4. RESPONSE INTEGRITY
+echo -e "${CYAN}║${NC} ${BLUE}● RESPONSE INTEGRITY${NC}                                                           ${CYAN}║${NC}"
 size=$(echo "$page" | wc -c)
-
 if [ "$size" -lt 500 ]; then
-    echo -e "${RED}WARNING: very small response (possible blank page / crash)${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}WARNING: Very small response ($size bytes) - possible blank page${NC}"
 else
-    echo -e "${GREEN}Response size OK ($size bytes)${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}Response size OK ($size bytes)${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- WP-ADMIN CHECK ----------------
-echo "wp-admin check"
-
+# 5. WP-ADMIN CHECK
+echo -e "${CYAN}║${NC} ${BLUE}● WP-ADMIN CHECK${NC}                                                                ${CYAN}║${NC}"
 admin_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-admin/")
 login_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-login.php")
-
-echo "wp-admin: $admin_code"
-echo "wp-login: $login_code"
-
+echo -e "${CYAN}║${NC}   └─ wp-admin:  $admin_code"
+echo -e "${CYAN}║${NC}   └─ wp-login:  $login_code"
 if [[ "$admin_code" == "500" || "$login_code" == "500" ]]; then
-    echo -e "${RED}CRITICAL: Admin login broken${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}CRITICAL: Admin login broken${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- REST API CHECK ----------------
-echo "REST API"
-
+# 6. REST API CHECK
+echo -e "${CYAN}║${NC} ${BLUE}● REST API CHECK${NC}                                                                ${CYAN}║${NC}"
 rest_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-json/")
-
-echo "wp-json: $rest_code"
-
+echo -e "${CYAN}║${NC}   └─ wp-json: $rest_code"
 if [[ "$rest_code" == "500" ]]; then
-    echo -e "${RED}CRITICAL: REST API broken${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}CRITICAL: REST API broken${NC}"
 elif [[ "$rest_code" == "200" ]]; then
-    echo -e "${GREEN}REST API OK${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}REST API OK${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- XML-RPC CHECK ----------------
-echo "XML-RPC"
-
+# 7. XML-RPC CHECK
+echo -e "${CYAN}║${NC} ${BLUE}● XML-RPC CHECK${NC}                                                                ${CYAN}║${NC}"
 xmlrpc=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/xmlrpc.php")
-
-echo "xmlrpc.php: $xmlrpc"
-
+echo -e "${CYAN}║${NC}   └─ xmlrpc.php: $xmlrpc"
 if [[ "$xmlrpc" == "200" ]]; then
-    echo -e "${RED}WARNING: XML-RPC enabled (bruteforce target)${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}WARNING: XML-RPC enabled (bruteforce target)${NC}"
 elif [[ "$xmlrpc" == "403" || "$xmlrpc" == "404" ]]; then
-    echo -e "${GREEN}XML-RPC protected/disabled${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}XML-RPC protected/disabled${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- WP VERSION LEAK ----------------
-echo "WordPress version check"
-
+# 8. WP VERSION LEAK
+echo -e "${CYAN}║${NC} ${BLUE}● WP VERSION LEAK${NC}                                                               ${CYAN}║${NC}"
 version=$(timeout 7 curl -sL "https://$domain" | grep -oP 'content="WordPress \K[0-9.]+' | head -1)
-
 if [ -n "$version" ]; then
-    echo -e "${RED}WARNING: WP version exposed ($version)${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}WARNING: WP version exposed ($version)${NC}"
 else
-    echo -e "${GREEN}WP version hidden${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}WP version hidden${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- SECURITY PATTERNS ----------------
-echo "Malware pattern scan"
-
+# 9. MALWARE PATTERN SCAN
+echo -e "${CYAN}║${NC} ${BLUE}● MALWARE PATTERN SCAN${NC}                                                          ${CYAN}║${NC}"
 mal=$(timeout 7 curl -sL "https://$domain" | grep -iE "base64_decode|gzinflate|eval\(")
-
 if [ -n "$mal" ]; then
-    echo -e "${RED}CRITICAL: Suspicious code patterns found${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}CRITICAL: Suspicious code patterns found${NC}"
 else
-    echo -e "${GREEN}No obvious malware patterns${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}No obvious malware patterns${NC}"
 fi
+echo -e "${CYAN}╠══════════════════════════════════════════════════════════════════════════════╣${NC}"
 
-echo ""
-
-# ---------------- FINAL STATUS ----------------
-echo "Final status summary"
-
+# 10. FINAL STATUS
+echo -e "${CYAN}║${NC} ${BLUE}● FINAL STATUS${NC}                                                                  ${CYAN}║${NC}"
 if echo "$page" | grep -qi "critical error\|fatal error"; then
-    echo -e "${RED}STATUS: CRITICAL WORDPRESS FAILURE${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}STATUS: CRITICAL WORDPRESS FAILURE${NC}"
 elif [[ "$http_code" =~ ^(500|502|503|504)$ ]]; then
-    echo -e "${RED}STATUS: SERVER FAILURE${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}STATUS: SERVER FAILURE${NC}"
 elif [ "$size" -lt 500 ]; then
-    echo -e "${RED}STATUS: POSSIBLE BROKEN SITE${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${RED}STATUS: POSSIBLE BROKEN SITE${NC}"
 else
-    echo -e "${GREEN}STATUS: OK${NC}"
+    echo -e "${CYAN}║${NC}   └─ ${GREEN}STATUS: OK${NC}"
 fi
 
+# Нижня межа таблиці
+echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════════════╝${NC}"
+echo ""
 	
     echo -e "\e[96m###################################################################################################################################################\e[0m"
 fi
