@@ -821,7 +821,7 @@ if [ -n "$a_records" ]; then
 else
     echo "No A record"
 fi
-
+echo
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
 
 declare -A resolver_names=(
@@ -981,26 +981,31 @@ else
 fi
 
 echo
-    echo -e "${ORANGE}${UNDERLINE}SSL${RESET}"
+ echo -e "${ORANGE}${UNDERLINE}SSL${RESET}"
 
-expiry_date=$(echo | openssl s_client \
--servername "$domain" \
--connect "$domain:443" 2>/dev/null \
-| openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
+expiry_date=$(timeout 5 bash -c "
+echo | openssl s_client \
+-servername \"$domain\" \
+-connect \"$domain:443\" \
+-brief 2>/dev/null \
+| openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2
+")
 
 if [ -n "$expiry_date" ]; then
 
-    expiry_ts=$(date -d "$expiry_date" +%s)
+    expiry_ts=$(date -d "$expiry_date" +%s 2>/dev/null)
     now_ts=$(date +%s)
 
-    days_left=$(( (expiry_ts - now_ts) / 86400 ))
-
-    echo "SSL expires: $expiry_date ($days_left days till expiration)"
+    if [ -n "$expiry_ts" ]; then
+        days_left=$(( (expiry_ts - now_ts) / 86400 ))
+        echo "SSL expires: $expiry_date ($days_left days left)"
+    else
+        echo "SSL detected but could not parse expiry date"
+    fi
 
 else
-    echo "No SSL certificate detected"
+    echo "No SSL certificate detected or connection failed"
 fi
-
 echo
 
 output_serverHold=$(whois "$1" | grep -i "serverHold")
