@@ -762,7 +762,7 @@ UNDERLINE="\033[4m"
 
     print_in_frame "A,MX,TXT,PTR... records"
 
-     echo -e "${ORANGE}${UNDERLINE}A record${RESET}"
+   echo -e "${ORANGE}${UNDERLINE}A record${RESET}"
 
 a_records=$(dig +short A "$domain")
 
@@ -777,6 +777,12 @@ super_sonic_ips=(
 
 GREEN='\033[0;32m'
 NC='\033[0m'
+
+# --- CIDR check function (/24 only) ---
+is_in_edge_cdn() {
+    local ip="$1"
+    [[ "$ip" =~ ^159\.198\.67\. ]]
+}
 
 if [ -n "$a_records" ]; then
 
@@ -797,12 +803,14 @@ if [ -n "$a_records" ]; then
         /^descr:/ {gsub(/ \(.*/, "", $2); print $2; exit}
         ')
 
-        
         if [[ "$ip" == "100.100.100.6" ]]; then
             echo "The domain is not pointed to hosting or desync."
 
         elif [ "$is_super_sonic" = true ]; then
             echo -e "$ip - ${GREEN}SuperSonic CDN${NC}"
+
+        elif is_in_edge_cdn "$ip"; then
+            echo -e "$ip - ${GREEN}Edge CDN${NC}"
 
         else
             echo -e "$ip - ${who_ip:-Unknown}"
@@ -813,8 +821,6 @@ if [ -n "$a_records" ]; then
 else
     echo "No A record"
 fi
-
-echo
 
 resolvers=("1.1.1.1" "8.8.8.8" "9.9.9.9")
 
