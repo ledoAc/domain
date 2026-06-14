@@ -1053,6 +1053,37 @@ fi
             echo -e "----- $ns ----- $ip ---- "
         done <<< "$ns_records"
     fi
+	-----------
+	RESET="\033[0m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+RED="\033[0;31m"
+
+PASS="${GREEN}✓${RESET}"
+WARN="${YELLOW}⚠${RESET}"
+FAIL="${RED}✗${RESET}"
+
+card_top() {
+    printf "┌─ %-42s┐\n" "$1"
+}
+
+card_bottom() {
+    printf "└────────────────────────────────────────────┘\n"
+}
+
+row() {
+    printf "│ %-8s %-31s │\n" "$1" "$2"
+}
+
+
+card_top "MAIL RECORDS"
+
+row "MX" "$mx_status"
+row "SPF" "$spf_status"
+row "DKIM" "$dkim_status"
+row "DMARC" "$dmarc_status"
+
+card_bottom
 
     echo
     echo -e "\e[96m###################################################################################################################################################\e[0m"
