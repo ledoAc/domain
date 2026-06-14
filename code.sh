@@ -1065,6 +1065,161 @@ fi
         done <<< "$ns_records"
     fi
     echo
+
+
+
+
+ORANGE='\033[0;33m'
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+NC='\033[0m'
+
+echo -e "${ORANGE}WORDPRESS DIAGNOSTIC: $domain${NC}"
+echo ""
+
+# ---------------- CMS DETECTION ----------------
+echo "CMS detection"
+
+wp_detect=$(timeout 7 curl -sL "https://$domain" | grep -i "wp-content")
+
+if [ -n "$wp_detect" ]; then
+    echo -e "CMS: ${GREEN}WordPress detected${NC}"
+else
+    echo -e "CMS: ${RED}Not clearly detected${NC}"
+fi
+
+echo ""
+
+# ---------------- FRONTEND STATUS ----------------
+echo "Frontend status"
+
+http_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain")
+
+echo "HTTP code: $http_code"
+
+if [[ "$http_code" =~ ^(500|502|503|504)$ ]]; then
+    echo -e "${RED}CRITICAL: Server error${NC}"
+elif [ "$http_code" == "000" ]; then
+    echo -e "${RED}CRITICAL: No response / firewall / DNS issue${NC}"
+fi
+
+echo ""
+
+# ---------------- CRITICAL ERROR DETECTION ----------------
+echo "Critical error scan"
+
+page=$(timeout 7 curl -sL "https://$domain")
+
+if echo "$page" | grep -qi "critical error"; then
+    echo -e "${RED}CRITICAL: WordPress fatal error detected${NC}"
+elif echo "$page" | grep -qi "there has been a critical error"; then
+    echo -e "${RED}CRITICAL: WP fatal error page${NC}"
+elif echo "$page" | grep -qi "fatal error"; then
+    echo -e "${RED}CRITICAL: PHP fatal error detected${NC}"
+else
+    echo -e "${GREEN}No visible critical errors${NC}"
+fi
+
+echo ""
+
+# ---------------- BLANK PAGE CHECK ----------------
+echo "Response integrity"
+
+size=$(echo "$page" | wc -c)
+
+if [ "$size" -lt 500 ]; then
+    echo -e "${RED}WARNING: very small response (possible blank page / crash)${NC}"
+else
+    echo -e "${GREEN}Response size OK ($size bytes)${NC}"
+fi
+
+echo ""
+
+# ---------------- WP-ADMIN CHECK ----------------
+echo "wp-admin check"
+
+admin_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-admin/")
+login_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-login.php")
+
+echo "wp-admin: $admin_code"
+echo "wp-login: $login_code"
+
+if [[ "$admin_code" == "500" || "$login_code" == "500" ]]; then
+    echo -e "${RED}CRITICAL: Admin login broken${NC}"
+fi
+
+echo ""
+
+# ---------------- REST API CHECK ----------------
+echo "REST API"
+
+rest_code=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/wp-json/")
+
+echo "wp-json: $rest_code"
+
+if [[ "$rest_code" == "500" ]]; then
+    echo -e "${RED}CRITICAL: REST API broken${NC}"
+elif [[ "$rest_code" == "200" ]]; then
+    echo -e "${GREEN}REST API OK${NC}"
+fi
+
+echo ""
+
+# ---------------- XML-RPC CHECK ----------------
+echo "XML-RPC"
+
+xmlrpc=$(timeout 7 curl -o /dev/null -s -w "%{http_code}" "https://$domain/xmlrpc.php")
+
+echo "xmlrpc.php: $xmlrpc"
+
+if [[ "$xmlrpc" == "200" ]]; then
+    echo -e "${RED}WARNING: XML-RPC enabled (bruteforce target)${NC}"
+elif [[ "$xmlrpc" == "403" || "$xmlrpc" == "404" ]]; then
+    echo -e "${GREEN}XML-RPC protected/disabled${NC}"
+fi
+
+echo ""
+
+# ---------------- WP VERSION LEAK ----------------
+echo "WordPress version check"
+
+version=$(timeout 7 curl -sL "https://$domain" | grep -oP 'content="WordPress \K[0-9.]+' | head -1)
+
+if [ -n "$version" ]; then
+    echo -e "${RED}WARNING: WP version exposed ($version)${NC}"
+else
+    echo -e "${GREEN}WP version hidden${NC}"
+fi
+
+echo ""
+
+# ---------------- SECURITY PATTERNS ----------------
+echo "Malware pattern scan"
+
+mal=$(timeout 7 curl -sL "https://$domain" | grep -iE "base64_decode|gzinflate|eval\(")
+
+if [ -n "$mal" ]; then
+    echo -e "${RED}CRITICAL: Suspicious code patterns found${NC}"
+else
+    echo -e "${GREEN}No obvious malware patterns${NC}"
+fi
+
+echo ""
+
+# ---------------- FINAL STATUS ----------------
+echo "Final status summary"
+
+if echo "$page" | grep -qi "critical error\|fatal error"; then
+    echo -e "${RED}STATUS: CRITICAL WORDPRESS FAILURE${NC}"
+elif [[ "$http_code" =~ ^(500|502|503|504)$ ]]; then
+    echo -e "${RED}STATUS: SERVER FAILURE${NC}"
+elif [ "$size" -lt 500 ]; then
+    echo -e "${RED}STATUS: POSSIBLE BROKEN SITE${NC}"
+else
+    echo -e "${GREEN}STATUS: OK${NC}"
+fi
+
+	
     echo -e "\e[96m###################################################################################################################################################\e[0m"
 fi
 
