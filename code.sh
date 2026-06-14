@@ -1043,7 +1043,7 @@ fi
 
     print_in_frame "WHOIS"
 
-     who_is=$(whois $domain | grep -E "Updated Date|Name Server|Registry Expiry Date|Registrar:|owner:|nserver:|organization:|organization-loc:|DNSSEC")
+     who_is=$(whois $domain | grep -E "Updated Date|Name Server|Registry Expiry Date|Registrar:|Registrar URL:|owner:|nserver:|organization:|organization-loc:|DNSSEC")
 
     tld=$(echo "$domain" | awk -F '.' '{print $NF}')
 
