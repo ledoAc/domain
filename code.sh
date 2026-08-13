@@ -446,7 +446,7 @@ haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q
 
 			 print_in_frame "Imunify"
             echo -e "\e[3;36mLooking for an IP in Imunify block lists. \e[0m"
-imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip "$input_ip")
+imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip "$input_ip"")
             echo "$imunify"
 
 
@@ -495,7 +495,7 @@ haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q
 
 			print_in_frame "Imunify"
             echo -e "\e[3;36mLooking for an IP in Imunify block lists. \e[0m"
-imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip "$input_ip")
+imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip "$input_ip"")
             echo "$imunify"
 
             echo
