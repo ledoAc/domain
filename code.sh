@@ -444,6 +444,11 @@ fi
 haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
             echo "$haproxy"
 
+			 print_in_frame "Imunify"
+            echo -e "\e[3;36mLooking for an IP in HAProxy block lists. \e[0m"
+imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip "$input_ip"")
+            echo "$imunify"
+
 
             echo
  echo -e "\e[96m####################################################################################################################################################\e[0"
