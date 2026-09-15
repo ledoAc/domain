@@ -95,7 +95,7 @@ if [ "$#" -eq 2 ]; then
 
  server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
 
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 found_domlogs=false
 
 while IFS= read -r line; do
