@@ -113,7 +113,7 @@ echo
 
 while IFS= read -r line; do
     echo "$line"  
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null)
 
 
 found_mysql=false
@@ -128,7 +128,7 @@ print_in_frame_dom "=====================| MYSQL |====================="
             found_mysql=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null)
 
 
 echo
@@ -163,11 +163,11 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null)
 
 while IFS= read -r line; do
     echo "$line" 
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null)
 
 
 found_mysql=false
@@ -182,7 +182,7 @@ print_in_frame_dom "=====================| MYSQL |====================="
             found_mysql=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null)
 
 
 echo
@@ -202,10 +202,10 @@ if [ "$#" -eq 2 ]; then
     domain="$1"
     if [ "$param" = "-scan" ]; then
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
         print_in_frame "Scan"
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
-            server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+            server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
             if [ -z "$server_record" ]; then
                 echo "Error: Server record not found. Exiting."
                 exit 1
@@ -240,10 +240,10 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-header" ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
- server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+ server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
 read -p "Enter ID: " input_email
         email="$input_email"
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
@@ -297,13 +297,13 @@ if [ "$#" -eq 2 ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
 
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
 
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 
-server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
 
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 
@@ -319,7 +319,7 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null)
 
 echo
 
@@ -348,7 +348,7 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null)
 
 
 echo
@@ -407,7 +407,7 @@ if [ "$#" -eq 2 ]; then
         web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
-            server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+            server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
             read -p "Enter IP: " input_ip
             checkip="$input_ip"
 
@@ -520,10 +520,10 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-e" ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
- server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+ server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
 read -p "Enter email address or ID: " input_email
         email="$input_email"
 print_in_frame "Maillog"
@@ -587,12 +587,12 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-p" ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 
 	print_in_frame "Number of connections to ports and TTFB"
-            server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
+            server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
             ssh_port443=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "csuser@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
             ssh_port80=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "csuser@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")        
 cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record.web-hosting.com "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
@@ -601,7 +601,7 @@ echo "$ttfb"
 echo
 echo -e "\e[3;36mIf TTFB is higher than 5 seconds – smth is going on in the web server and is better to be reported to SME.\nIf TTFB is low (less than 1 second (1000ms) can be considered as tolerable for shared hosts).\e[0m"
 echo 
-echo -e  "Server: $(dig +short -x "$serv_a_records") -- $cloud_rel "
+echo -e  "Server: $(dig +short -x "$serv_a_records" | tail -1) -- $cloud_rel "
             echo "Established connections to port 443: $ssh_port443"
             echo "Established connections to port 80: $ssh_port80"
 		echo
