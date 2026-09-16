@@ -94,9 +94,10 @@ if [ "$#" -eq 2 ]; then
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
 
  server_record=$(dig +short -x "$serv_a_records" | tail -1 | cut -d'-' -f1)
-
+echo="$server_record"
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 found_domlogs=false
+echo="$cuser"
 
 while IFS= read -r line; do
     if $found_domlogs; then
