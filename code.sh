@@ -404,7 +404,7 @@ if [ "$#" -eq 2 ]; then
     if [ "$param" = "-i" ]; then
 
         serv_a_records=$(dig +short +trace +nodnssec "$domain" A | grep -oE '\b([0-9]{1,3}\.){3}[0-9]{1,3}\b' | tail -n 2 | head -n 1)
-        web_serv=$(dig +short -x "$serv_a_records")
+        web_serv=$(dig +short -x "$serv_a_records" | tail -1)
 
         if [[ "$web_serv" == *"web-hosting.com"* ]]; then
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
