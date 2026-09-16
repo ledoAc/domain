@@ -108,12 +108,12 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
 echo
 
 while IFS= read -r line; do
     echo "$line"  
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
 
 
 found_mysql=false
@@ -128,7 +128,7 @@ print_in_frame_dom "=====================| MYSQL |====================="
             found_mysql=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
 
 
 echo
@@ -149,7 +149,7 @@ echo -e "\e[96m#################################################################
                 read -p "Enter the full name of the server: " server_record_new
             done
 
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new"  "sudo /scripts/whoowns $domain")
 
 found_domlogs=false
 
@@ -163,11 +163,11 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -d" 2>/dev/null | tr -d '\0')
 
 while IFS= read -r line; do
     echo "$line" 
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -p" 2>/dev/null | tr -d '\0')
 
 
 found_mysql=false
@@ -182,7 +182,7 @@ print_in_frame_dom "=====================| MYSQL |====================="
             found_mysql=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -m" 2>/dev/null | tr -d '\0')
 
 
 echo
@@ -210,7 +210,7 @@ if [ "$#" -eq 2 ]; then
                 echo "Error: Server record not found. Exiting."
                 exit 1
             fi
-            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
+            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /scripts/whoowns $domain")
             if [ -z "$cuser" ]; then
                 echo "Error: Unable to determine user for domain $domain. Exiting."
                 exit 1
@@ -220,9 +220,9 @@ if [ "$#" -eq 2 ]; then
                 read -p "Enter the full name of the server: " server_record_new
             done
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$serv_a_records" "sudo /scripts/whoowns $domain")
+            cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$serv_a_records" "sudo /scripts/whoowns $domain")
         fi
-        scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
+        scan_report=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /usr/local/sbin/cxs.sh --filemax 50000 -B --user $cuser --report \"/home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt\"")
         echo "Scan in progress..."
         echo "Scan report: tail /home/$cuser/scanreport-$cuser-$(date '+%b_%d_%Y_%Hh%Mm').txt"
         echo -e "\e[96m####################################################################################################################################################\e[0]"
@@ -246,12 +246,12 @@ if [ "$#" -eq 2 ]; then
  server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
 read -p "Enter ID: " input_email
         email="$input_email"
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 
 print_in_frame "Header"
 
-linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
-header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh $linKheader")
+linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh $linKheader")
 clean_header=$(echo "$header" | sed 's/^Grepping in "\/home\/eyepptup\/mail"//')
 
 echo "$clean_header"
@@ -266,11 +266,11 @@ echo -e "\e[96m#################################################################
             done
 read -p "Enter ID: " input_email
 email="$input_email"
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new"  "sudo /scripts/whoowns $domain")
 print_in_frame "Header"
 
-linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
-header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/local/sbin/cat.sh $linKheader")
+linKheader=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep -irl $email /home/$cuser/mail")
+header=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /usr/local/sbin/cat.sh $linKheader")
 clean_header=$(echo "$header" | sed 's/^Grepping in "\/home\/eyepptup\/mail"//')
 
 echo "$clean_header"
@@ -305,7 +305,7 @@ if [ "$#" -eq 2 ]; then
 
 server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
 
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 
 found_domlogs=false
 
@@ -319,7 +319,7 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
 
 echo
 
@@ -334,7 +334,7 @@ echo -e "\e[96m#################################################################
                 read -p "Enter the full name of the server: " server_record_new
             done
 
-cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new"  "sudo /scripts/whoowns $domain")
+cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new"  "sudo /scripts/whoowns $domain")
 
 found_domlogs=false
 
@@ -348,7 +348,7 @@ print_in_frame_dom "=====================| DOMLOGS |====================="
             found_domlogs=true
         fi
     fi
-done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
+done < <(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/scripts/techsup/check_user_load.sh -u $cuser -L" 2>/dev/null | tr -d '\0')
 
 
 echo
@@ -415,24 +415,24 @@ if [ "$#" -eq 2 ]; then
             print_in_frame "cPHulk"
 
  echo -e "\e[3;36mSearching through the cPHulk log.\e[0m"
-     cphulk=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $checkip /usr/local/cpanel/logs/cphulkd.log | tail -n 5")
+     cphulk=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep $checkip /usr/local/cpanel/logs/cphulkd.log | tail -n 5")
             echo "$cphulk"
 
             print_in_frame "Check IP"
 
             echo -e "\e[3;36mChecking whether the IP is blocked in the firewall.\e[0m"
-     check_ip=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/sbin/csf -g $checkip")
+     check_ip=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /usr/sbin/csf -g $checkip")
             echo "$check_ip"
 
           print_in_frame "LFD"
 
             echo -e "\e[3;36mChecking LFD log.\e[0m"
-     lfd=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh /var/log/lfd.log | grep $checkip | tail -n 10")
+     lfd=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /usr/local/sbin/cat.sh /var/log/lfd.log | grep $checkip | tail -n 10")
             echo "$lfd"
 
 print_in_frame "Modsec"
 echo -e "\e[3;36mChecking ModSecurity-related entries from the error log.\e[0m"
-mod=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "grep $checkip /usr/local/apache/logs/error_log | grep -i modsec | tail -n 5")
+mod=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "grep $checkip /usr/local/apache/logs/error_log | grep -i modsec | tail -n 5")
 if [ -z "$mod" ]; then
     echo "No ModSecurity-related entries found."
 else
@@ -441,12 +441,12 @@ fi
 
             print_in_frame "HAProxy"
             echo -e "\e[3;36mLooking for an IP in HAProxy block lists. \e[0m"
-haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
+haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
             echo "$haproxy"
 
 			 print_in_frame "Imunify"
             echo -e "\e[3;36mLooking for an IP in Imunify block lists. \e[0m"
-imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip '$input_ip'")
+imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip '$input_ip'")
             echo "$imunify"
 
 
@@ -464,24 +464,24 @@ imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q
 
             echo -e "\e[3;36mChecking whether the IP is blocked in the firewall.\e[0m"
  echo -e "\e[3;36mSearching through the cPHulk log.\e[0m"
-     cphulk=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $checkip /usr/local/cpanel/logs/cphulkd.log | tail -n 5")
+     cphulk=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep $checkip /usr/local/cpanel/logs/cphulkd.log | tail -n 5")
             echo "$cphulk"
 
             print_in_frame "Check IP"
 
             echo -e "\e[3;36mChecking whether the IP is blocked in the firewall.\e[0m"
-            check_ip=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/sbin/csf -g $checkip")
+            check_ip=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /usr/sbin/csf -g $checkip")
             echo "$check_ip"
 
        print_in_frame "LFD"
 
             echo -e "\e[3;36mChecking LFD log.\e[0m"
-     lfd=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/local/sbin/cat.sh /var/log/lfd.log | grep $checkip | tail -n 10")
+     lfd=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /usr/local/sbin/cat.sh /var/log/lfd.log | grep $checkip | tail -n 10")
             echo "$lfd"
 
 print_in_frame "Modsec"
 echo -e "\e[3;36mChecking ModSecurity-related entries from the error log.\e[0m"
-mod=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "grep $checkip /usr/local/apache/logs/error_log | grep -i modsec | tail -n 5")
+mod=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "grep $checkip /usr/local/apache/logs/error_log | grep -i modsec | tail -n 5")
 if [ -z "$mod" ]; then
     echo "No ModSecurity-related entries found."
 else
@@ -490,12 +490,12 @@ fi
 
             print_in_frame "HAProxy"
             echo -e "\e[3;36mLooking for an IP in HAProxy block lists. \e[0m"
-haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
+haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep $input_ip /var/log/haproxy/access.log | tail -n 5")
             echo "$haproxy"
 
 			print_in_frame "Imunify"
             echo -e "\e[3;36mLooking for an IP in Imunify block lists. \e[0m"
-imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip '$input_ip'")
+imunify=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /usr/bin/imunify360-agent ip-list local list --by-ip '$input_ip'")
             echo "$imunify"
 
             echo
@@ -529,18 +529,18 @@ read -p "Enter email address or ID: " input_email
 print_in_frame "Maillog"
 
 echo -e "\e[3;36mProcessing logs of issues related to mail clients (eg successful email client logins, failed logins causing IPs to be blocked) and SpamAssassin.\e[0m"
-email_log=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $email /var/log/maillog | tail -n 5")
+email_log=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $email /var/log/maillog | tail -n 5")
              echo "$email_log"
 print_in_frame "Exim"
 echo -e "\e[3;36mSearching through exim_mainlog .\e[0m"
 
-exim=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $email /var/log//exim_mainlog | tail -n 5")
+exim=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep $email /var/log//exim_mainlog | tail -n 5")
 echo "$exim"
 
 print_in_frame "POP3"
 echo -e "\e[3;36mSearching through exim_mainlog POP3 .\e[0m"
 
-pop=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $email  /var/log//maillog | grep pop3 | tail")
+pop=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $email  /var/log//maillog | grep pop3 | tail")
 echo "$pop"
 
 echo
@@ -555,17 +555,17 @@ email="$input_email"
         print_in_frame "Maillog"
 echo -e "\e[3;36mProcessing logs of issues related to mail clients (eg successful email client logins, failed logins causing IPs to be blocked) and SpamAssassin.\e[0m"
 
-  email_log=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -i $email /var/log/maillog | tail -n 5")
+  email_log=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep -i $email /var/log/maillog | tail -n 5")
             echo "$email_log"
 print_in_frame "Exim"
 echo -e "\e[3;36mSearching through exim_mainlog .\e[0m"
 
-exim=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $email /var/log/exim_mainlog | tail -n 5")
+exim=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep $email /var/log/exim_mainlog | tail -n 5")
 echo "$exim"
 print_in_frame "POP3"
 echo -e "\e[3;36mSearching through exim_mainlog POP3 .\e[0m"
 
-pop=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -i $email  /var/log/maillog | grep pop3 | tail")
+pop=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep -i $email  /var/log/maillog | grep pop3 | tail")
 
 echo "$pop"
 
@@ -593,9 +593,9 @@ if [ "$#" -eq 2 ]; then
 
 	print_in_frame "Number of connections to ports and TTFB"
             server_record=$(dig +short -x "$serv_a_records" | cut -d'-' -f1)
-            ssh_port443=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
-            ssh_port80=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "wh@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")        
-cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record.web-hosting.com "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
+            ssh_port443=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "csuser@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
+            ssh_port80=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789  "csuser@$server_record.web-hosting.com" "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")        
+cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record.web-hosting.com "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
 ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} \nTTFB: %{time_starttransfer} \nTotal time: %{time_total} \n" https:/$domain/)
 echo "$ttfb"
 echo
@@ -615,8 +615,8 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
             echo "$response_time"
 
             print_in_frame "ModSec"
-		modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record.web-hosting.com "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
-            date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "date")
+		modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record.web-hosting.com "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
+            date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "date")
 
             if [ -n "$modsec" ]; then
                 echo "$modsec"
@@ -630,7 +630,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
 
             domain="$domain"
             unset ni nh
-            haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "grep -qi \"$domain\" /etc/haproxy/acl_block_{base,dom,path}.lst && echo -e '\e[41mblocked in HAProxy\e[0m'")
+            haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "grep -qi \"$domain\" /etc/haproxy/acl_block_{base,dom,path}.lst && echo -e '\e[41mblocked in HAProxy\e[0m'")
 
             if [ -n "$haproxy" ]; then
                 echo "The domain $domain is $haproxy"
@@ -638,7 +638,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
                 echo "The domain $domain is not blocked in HAProxy"
             fi
 
-            iptables=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo csf -g \"$domain\" | grep -qi iptablock && echo -e '\e[41mblocked in IPtables\e[0m'")
+            iptables=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo csf -g \"$domain\" | grep -qi iptablock && echo -e '\e[41mblocked in IPtables\e[0m'")
 
             if [ -n "$iptables" ]; then
                 echo "The domain $domain is $iptables"
@@ -652,7 +652,7 @@ echo -e "\e[3;36m1k+ connections on port 80 = possible DDoS; \e[3m5k+ connection
 print_in_frame_records "Cron"
 echo -e "\e[3;36mChecking the log of recently triggered cron jobs of a cPanel account.\e[0m"
 echo
-cron=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $user 2>/dev/null /var/log/cron | tail -n 5")
+cron=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep $user 2>/dev/null /var/log/cron | tail -n 5")
 if [ -n "$cron" ]; then
     echo "$cron"
 else
@@ -662,12 +662,12 @@ echo
 print_in_frame_records "Login"
 echo -e "\e[3;36mSearching through cPanel login log. This log shows a list of failed and deferred login attempts to cPanel or WHM.\e[0m"
 echo
-login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep $user /usr/local/cpanel/logs/login_log | tail -n 5")
+login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep $user /usr/local/cpanel/logs/login_log | tail -n 5")
 echo "$login"
 print_in_frame_records "FTP"
 echo -e "\e[3;36mSearching through the system FTP log. This log stores valuable, non-debug and non-critical messages. This log should be considered the "general system activity" log.\e[0m"
 echo
-login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $user /var/log/pure_ftpd.log | tail -n 5")
+login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com" "sudo /root/bin/csgrep -i $user /var/log/pure_ftpd.log | tail -n 5")
 echo "$login"
 
 
@@ -679,9 +679,9 @@ while [[ -z "$server_record_new" ]]; do
             done
 
 print_in_frame "Number of connections to ports and TTFB"
-ssh_port443_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
-ssh_port80_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")
-cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
+ssh_port443_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new "netstat -anp 2>/dev/null | grep :443 | grep ESTABLISHED | wc -l")
+ssh_port80_new=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new "netstat -anp 2>/dev/null | grep :80 | grep ESTABLISHED | wc -l")
+cloud_rel=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new "cat /etc/redhat-release | awk -F '(' '{print \$1}'")
 ttfb=$(curl -o /dev/null -sw "Connect: %{time_connect} \nTTFB: %{time_starttransfer} \nTotal time: %{time_total} \n" https:/$domain/)
 echo "$ttfb"
 echo
@@ -700,8 +700,8 @@ echo "$response_time"
 
 print_in_frame "ModSec"
 domain="$domain"
-modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
-date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new "date")
+modsec=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new "grep $domain /usr/local/apache/logs/error_log | grep -i modsec | tail -n 2")
+date=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new "date")
 
 if [ -n "$modsec" ]; then
     echo "$modsec"
@@ -713,14 +713,14 @@ echo "Server date: $date"
 
 print_in_frame "HAProxy and CSF blocks"
 
-haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new  "grep -qi $domain /etc/haproxy/acl_block_{base,dom,path}.lst && echo -e '\e[41mblocked in HAProxy\e[0m'")
+haproxy=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new  "grep -qi $domain /etc/haproxy/acl_block_{base,dom,path}.lst && echo -e '\e[41mblocked in HAProxy\e[0m'")
 if [ -n "$haproxy" ]; then
     echo "The domain $domain is $haproxy"
 else
     echo "The domain $domain is not blocked in HAProxy"
 fi
 
-iptables=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 wh@$server_record_new  "sudo csf -g $domain | grep -qi iptablock && echo -e echo -e '\e[41mblocked in IPtables\e[0m'")
+iptables=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 csuser@$server_record_new  "sudo csf -g $domain | grep -qi iptablock && echo -e echo -e '\e[41mblocked in IPtables\e[0m'")
 if [ -n "$iptables" ]; then
     echo "The domain $domain is $iptables"
 else
@@ -732,7 +732,7 @@ fi
 print_in_frame_records "Cron"
 echo -e "\e[3;36mChecking the log of recently triggered cron jobs of a cPanel account.\e[0m"
 echo
-cron=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $user 2>/dev/null /var/log/cron | tail -n 5")
+cron=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep $user 2>/dev/null /var/log/cron | tail -n 5")
 if [ -n "$cron" ]; then
     echo "$cron"
 else
@@ -742,13 +742,13 @@ echo
 print_in_frame_records "Login"
 echo -e "\e[3;36mSearching through cPanel login log. This log shows a list of failed and deferred login attempts to cPanel or WHM.\e[0m"
 echo
-login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep $user /usr/local/cpanel/logs/login_log | tail -n 5")
+login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep $user /usr/local/cpanel/logs/login_log | tail -n 5")
 echo "$login"
 echo
 print_in_frame_records "FTP"
 echo -e "\e[3;36mSearching through the system FTP log. This log stores valuable, non-debug and non-critical messages. This log should be considered the "general system activity" log.\e[0m"
 echo
-login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "wh@$server_record_new" "sudo /root/bin/csgrep -i $user /var/log/pure_ftpd.log | tail -n 5")
+login=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record_new" "sudo /root/bin/csgrep -i $user /var/log/pure_ftpd.log | tail -n 5")
 echo "$login"
 echo -e "\e[96m####################################################################################################################################################\e[0m"
         fi
