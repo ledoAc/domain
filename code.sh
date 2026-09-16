@@ -98,7 +98,7 @@ if [ "$#" -eq 2 ]; then
 cuser=$(ssh -o "StrictHostKeyChecking no" -o "UserKnownHostsFile=/dev/null" -q -p 12789 "csuser@$server_record.web-hosting.com"  "sudo /scripts/whoowns $domain")
 found_domlogs=false
 
-echo "cuser=[$cuser]"
+
 while IFS= read -r line; do
     if $found_domlogs; then
         echo "$line"
